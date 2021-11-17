@@ -1,0 +1,79 @@
+  .navbar {
+    background-color: #004241;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+  .navbar a {
+    float: left;
+    display: block;
+    color: white !important;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+  .navbar a:hover {
+    background-color: #0C8054 !important;
+    color: #004241 !important;
+  }
+  .navbar a.active {
+    background-color: rgba(12, 128, 84,0.5);
+  }
+
+
+  #myFooter {
+    background-color: #004241;
+    margin:0;
+    padding:0;
+    color:  white;
+    width: 100%;
+    min-height: 160px;
+    position: relative;
+    bottom: 0%;
+    text-align: center;
+}
+
+#myFooter .footer-copyright {
+    background-color: #333333;
+    margin:0;
+    height: fit-content;
+    position: relative;
+    bottom:0rem;
+    width: 100%;
+}
+
+#myFooter .row {
+    text-align: center;
+}
+
+#myFooter ul {
+    list-style-type: none;
+    line-height: 1.7;
+}
+
+#myFooter h5 {
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+    margin-top: 30px;
+}
+
+#myFooter a {
+    color: white;
+    text-decoration: none;
+}
+
+#myFooter a:hover,
+#myFooter a:focus {
+    text-decoration: none;
+    color: #0C8054;
+}
+
+#copyrightText p{
+    position: relative;
+    top:45%;
+    min-height: 35px;
+}
+
