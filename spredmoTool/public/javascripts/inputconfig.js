@@ -1,9 +1,16 @@
 
-changeInputHTML("model");
+changeInputHTML("model", 0);// initializing call to visualize standard input on site load
 
-function changeInputHTML(choice){
+/**
+ * This method calls createFileUpload function to create a html file upload form and add other IO depending on the parameter "choice"
+ * @param {String} choice "model"(for users with trained models) or "data"(for users with only training data), depending on the input that needs to visualized
+ * @param {Integer} status (0 or 1), 0 if the Container doesnt exist, 1 for the rest
+ */
+function changeInputHTML(choice, status){
     let div=document.getElementById("modelInDiv");
-    div.innerHTML="";
+    if(status==1){
+        div.innerHTML="";
+    }
     if(choice=="model"){
         createFileUpload("Wählen Sie ihr Modell aus", div);
     }
@@ -16,7 +23,13 @@ function changeInputHTML(choice){
         div.appendChild(p);
     }
 }
-function createFileUpload(placeholder, div){
+
+/**
+ * Creates a html file upload input with the placeholder inherrited via parameter
+ * @param {String} placeholder text that will be shown in the upload field
+ * @param {*} maindiv html div-container to append the file upload on
+ */
+function createFileUpload(placeholder, maindiv){
     let d= document.createElement("DIV");
     d.setAttribute("class", "custom-file");
 
@@ -32,6 +45,5 @@ function createFileUpload(placeholder, div){
 
     d.appendChild(f);
     d.appendChild(l);
-    div.appendChild(d);
-
+    maindiv.appendChild(d);
 }
