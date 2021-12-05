@@ -1,0 +1,36 @@
+#Pebesma: Please install these system dependencies (udunits, GDAL, GEOS, PROJ) first, then install the R packages. See the README of this repo for instructions.
+#reqired for sf
+sudo apt-get -y update && apt-get install -y  libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
+
+sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+sudo apt-get update
+sudo apt-get install libudunits2-dev libgdal-dev libgeos-dev libproj-dev 
+
+#installtion of packages
+
+install.packages("sf")
+install.packages("raster")
+install.packages("caret")
+install.packages("viridis")
+install.packages("latticeExtra")
+install.packages("randomForest")
+install.packages("CAST")
+install.packages("doParallel")
+install.packages("parallel")
+
+
+
+#load package
+
+library(sf)
+library(raster)
+library(caret)
+library(viridis)
+library(latticeExtra)
+library(randomForest)
+library(CAST)
+library(doParallel)
+library(parallel)
+
+
