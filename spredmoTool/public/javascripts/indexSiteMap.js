@@ -27,7 +27,7 @@ mymap.addControl(new L.Control.Draw( {
     draw: {
         // Only rectangle and polygon draw function is needed
         polyline: false,
-        polygon: true,
+        polygon: false,
         marker: false,
         circle:false,
         rectangle: true,
