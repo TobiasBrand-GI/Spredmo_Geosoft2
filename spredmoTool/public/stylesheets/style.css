@@ -1,8 +1,23 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding:0;
+  font-size: 28px;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0C8054 !important;
+  height: 100vh;
+  min-height: 100vh;
 }
+#main{ height: 95vh;}
 
-a {
-  color: #00B7FF;
+#contentFrame{
+  position: relative;
+  top: 5rem;
+}
+#spacer{
+  height: 6.5rem;
+  width: 100%;
+}
+.btn-green{
+  background-color: #004241 !important;
+  color: white !important;
 }
