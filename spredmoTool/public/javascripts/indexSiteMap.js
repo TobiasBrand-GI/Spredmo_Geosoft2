@@ -1,4 +1,5 @@
 'use strict'
+
 /**
  * Basemap for Leaflet Application
  * @type Leaflet Map
@@ -74,3 +75,4 @@ mymap.on('draw:deleted', function(e){
     let dateObject = new Date(unixMilli);
     return dateObject.toLocaleTimeString([],{hour: '2-digit', minute:'2-digit'});
 }
+
