@@ -1,3 +1,4 @@
+
 const plottyRenderer = L.LeafletGeotiff.plotty({
     displayMin: 0,
     displayMax: 10,
