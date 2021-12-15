@@ -1,4 +1,5 @@
-const plottyRenderer = L.LeafletGeotiff.plotty({
+
+const plottyRenderer = new L.LeafletGeotiff.plotty({
     displayMin: 0,
     displayMax: 10,
     clampLow: false,
@@ -6,9 +7,10 @@ const plottyRenderer = L.LeafletGeotiff.plotty({
   });
 
 function loadTIFF(){
-    const url ="https://stuartmatthews.github.io/leaflet-geotiff/tif/wind_speed.tif";
-    
+    const url ="../images/wind_speed.tif";
     const options={renderer:plottyRenderer,};
-    var tifflayer = L.LeafletGeotiff(url, options).addTo(mymap);
+    var tifflayer = new L.LeafletGeotiff(url, options).addTo(mymap);
     console.log(tifflayer);
 }
+
+loadTIFF();
