@@ -1,5 +1,5 @@
 start_time <- Sys.time()
-print("start processing")
+message("start processing")
 
 #####
 ### load shape as gpkg and transform crs
@@ -8,7 +8,7 @@ input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folde
 # st_crs(input_shape)
 input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")
 # st_crs(input_shape_32632)
-print("DONE: st_transform() for '<input_shape>.gpkg' ")
+message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
 #####
 ### visualisation in RStudio
@@ -23,7 +23,7 @@ st_as_sfc(bbox) %>%
   st_transform("EPSG:4326") %>%
   st_bbox() -> bbox_wgs84
 bbox_wgs84
-print("DONE: st_as_sfc() for bbox")
+message("DONE: st_as_sfc() for bbox")
 
 #####
 ### stac-request
@@ -37,7 +37,7 @@ items = s %>%
               limit = 500) %>%
   post_request() 
 # items
-print("DONE: stac_search()")
+message("DONE: stac_search()")
 
 #####
 ### explor results
@@ -54,7 +54,7 @@ s2_collection = stac_image_collection(items$features,
                                       property_filter = function(x) {
                                         x[["eo:cloud_cover"]] < 20})
 # s2_collection
-print("DONE: stac_image_collection()")
+message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
@@ -71,35 +71,36 @@ v.input_shape.overview = cube_view(srs="EPSG:32632",
                                                  top = bbox["ymax"] + 1000, 
                                                  bottom = bbox["ymin"]-1000))
 # v.input_shape.overview
-print("DONE: cube_view()")
+message("DONE: cube_view()")
 
 #####
 ### mask for clouds and their shadows
 S2.mask = image_mask("SCL", values = c(3,8,9))
-print("DONE: image_mask()")
+message("DONE: image_mask()")
 
 #####
 ### set threads (logische Prozessoren) 
 #library(magrittr)
 gdalcubes_options(threads = 6)
-print("DONE: image_mask()")
+message("DONE: image_mask()")
 
 #####
 ### make raster cube
 library(dplyr) # needed for '%>%'
 # TODO: try catch wegen geom/geometry
-print("this raster cube function takes some time:")
+message("DO NOT WORRY :)")
+message("this raster cube function takes some time:")
 satelite_cube <- raster_cube(s2_collection, v.input_shape.overview, S2.mask) %>%
   select_bands(c("B02", "B03", "B04")) %>%
   filter_geom(ms_shape_32632$geometry) %>%    
   plot(rgb = 3:1, zlim=c(0,1500))
-print("DONE: raster_cube()")
+message("DONE: raster_cube()")
 
 #####
 ### save as geoTiff
 # warum als geoTiff ???
 # write_tif(satelite_cube, dir = "./R/outputData")
-print("DONE: save as geoTiff")
+message("DONE: save as geoTiff")
 
 #####
 ### printing processing time
