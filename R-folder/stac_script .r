@@ -92,15 +92,23 @@ message("DO NOT WORRY :)")
 message("this raster cube function takes some time:")
 satelite_cube <- raster_cube(s2_collection, v.input_shape.overview, S2.mask) %>%
   select_bands(c("B02", "B03", "B04")) %>%
-  filter_geom(ms_shape_32632$geometry) %>%    
-  plot(rgb = 3:1, zlim=c(0,1500))
+  filter_geom(input_shape_32632$geometry) %>%    
+  plot(rgb = 3:1, zlim=c(0,1500)) #%>%
+#  write_tif(dir = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder",
+#            prefix = "output_",
+#            overviews = FALSE,
+#            COG = TRUE,
+#            rsmpl_overview = "nearest",
+#            creation_options = NULL,
+#            write_json_descr = FALSE,
+#            pack = NULL)
 message("DONE: raster_cube()")
 
 #####
-### save as geoTiff
+### TODO: #2 save as geoTiff
 # warum als geoTiff ???
 # write_tif(satelite_cube, dir = "./R/outputData")
-message("DONE: save as geoTiff")
+message("(NOT YET) DONE: save as geoTiff")
 
 #####
 ### printing processing time
