@@ -3,18 +3,11 @@ body {
   padding:0;
   font-size: 28px;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #0C8054 !important;
+  background-color: #90c7b2 !important;
   height: 100vh;
   min-height: 100vh;
 }
 #main{ height: 95vh;}
-
-#textContent{
-  color: rgb(12, 55, 90);
-  display: inline-block;
-  padding: 10px;
-  text-align:center;
-}
 
 #contentFrame{
   position: relative;
