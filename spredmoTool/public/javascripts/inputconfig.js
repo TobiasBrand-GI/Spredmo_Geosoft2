@@ -8,8 +8,10 @@ changeInputHTML("model", 0);// initializing call to visualize standard input on 
  */
 function changeInputHTML(choice, status){
     let div=document.getElementById("modelInDiv");
+    let btndiv=document.getElementById("submitbutton")
     if(status==1){
         div.innerHTML="";
+        btndiv.innerHTML="";
     }
     if(choice=="model"){
         createFileUpload("Dieses Modell", div);
@@ -25,8 +27,8 @@ function changeInputHTML(choice, status){
 }
 
 /**
- * Creates a html file upload input with the placeholder inherrited via parameter
- * @param {String} placeholder text that will be shown in the upload field
+ * Creates a html file upload input and a submit button with the button text being inherrited via parameter
+ * @param {String} placeholder text that will be shown on the button
  * @param {*} maindiv html div-container to append the file upload on
  */
 function createFileUpload(placeholder, maindiv){
@@ -38,25 +40,18 @@ function createFileUpload(placeholder, maindiv){
     f.setAttribute("name","modelFile");
     f.setAttribute("class", "form-control form-control-lg");
 
-    /*let l = document.createElement("LABEL");
-    l.htmlFor="modelFile";
-    l.innerHTML=placeholder;
-    l.setAttribute("class", "custom-file-label")*/
+    d.appendChild(f);
+    maindiv.appendChild(d);
 
-    let bd=document.createElement("DIV");
-    bd.setAttribute("class", "input-group-append");
-
+    let btndiv=document.getElementById("submitbutton");
     let b=document.createElement("BUTTON");
+
     b.innerHTML=placeholder+" verwenden";
     b.id="readButton";
     b.setAttribute("class", "btn btn-green");
-
-    bd.appendChild(b);
-
-    d.appendChild(f);
-    //d.appendChild(l);
-    d.appendChild(bd);
-    maindiv.appendChild(d);
+    b.setAttribute("type", "submit");
+    
+    btndiv.appendChild(b);
 }
 /**
  * Functionality to add Pois per JSON-File
