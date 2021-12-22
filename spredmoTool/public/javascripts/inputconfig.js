@@ -20,9 +20,27 @@ function changeInputHTML(choice, status){
         createFileUpload("Diese Trainingsdaten", div);
         let p = document.createElement("INPUT");
         p.setAttribute("type","number");
+        
+        let p1 = document.createElement("INPUT");
+        p.setAttribute("type","number");
+
+        
+        let p2 = document.createElement("INPUT");
+        p.setAttribute("type","number");
+
+        let p3 = document.createElement("INPUT");
+        p.setAttribute("type","number");
+
+        let br1= document.createElement("br");
         let br= document.createElement("br");
+
         div.appendChild(br);
         div.appendChild(p);
+        div.appendChild(p1);
+        div.appendChild(br1);
+        div.appendChild(p2);
+        div.appendChild(p3);
+        
     }
 }
 
@@ -50,7 +68,7 @@ function createFileUpload(placeholder, maindiv){
     b.id="readButton";
     b.setAttribute("class", "btn btn-green");
     b.setAttribute("type", "submit");
-    
+
     btndiv.appendChild(b);
 }
 /**
