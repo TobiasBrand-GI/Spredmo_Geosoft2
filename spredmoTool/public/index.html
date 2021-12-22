@@ -45,7 +45,7 @@
     </nav>
     <!--Main Content-->
 <div id="contentFrame" class="d-flex justify-content-center flex-wrap align-items-center p-5">
-    <div id="textContent" class=" col col-lg-4 col-12 rounded text-center">
+    <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
         
         <h1> Tool zur Berechnung der Area of Applicability</h1>
         <form>
@@ -55,17 +55,47 @@
                 <input type="radio" id="radioTrain" name="modelInput" value="train" onclick="changeInputHTML('data',1)"/>
                 <label for="radioTrain">Trainingsdaten für ein neues Modell</label>
             </div>
-            <div id="modelInDiv" class="form-group">
-
+            <div id="modelInDiv" class="form-group"></div>
+            <div id="dateDiv">
+                <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
+                <label>
+                    von:
+                    <input type="date" name="startDay">
+                </label>
+                <label>
+                    bis:
+                    <input type="date" name="endDay">
+                </label> 
+            </div></br>
+            <div id="standardParams">
+                <h5>Weitere Einstellungen</h5>
+                <label for="resolution">Auflösung der Data-Cubes:</label>
+                <select name="resolution" id="resolution">
+                    <option value="res10">10x10</option>
+                    <option value="res20">20x20</option>
+                    <option value="res50">50x50</option>
+                </select>
+                <label for="clouds">Wolkenbedekung:</label>
+                <select name="clouds" id="clouds">
+                    <option value="cl10">10%</option>
+                    <option value="cl20">20%</option>
+                    <option value="cl30">30%</option>
+                    <option value="cl40">40%</option>
+                    <option value="cl50">50%</option>
+                    <option value="cl60">60%</option>
+                    <option value="cl70">70%</option>
+                    <option value="cl80">80%</option>
+                    <option value="cl90">90%</option>
+                    <option value="cl100">100%</option>
+                </select>
             </div>
+            
             <script src="javascripts/inputconfig.js"></script>
             
         </form>
-        <!--<select class="form-select"  id="indexSelect" onchange="fillMap()">
-            <option value="">--Please choose an option--</option>                        
-        </select>-->
     </div>
-    <div id="mapid" class="col col-lg-8 col-12 border border-dark rounded align-self-lg-end"></div>
+    <!--<div id="spacer"></div>-->
+    <div id="mapid" class="col col-lg-5 col-12 border border-dark rounded align-self-lg-end"></div>
     <script src="javascripts/indexSiteMap.js"></script>
 </div>
 </div>
