@@ -82,7 +82,7 @@ message("DONE: image_mask()")
 ### set threads (logische Prozessoren) 
 #library(magrittr)
 gdalcubes_options(threads = 6)
-message("DONE: image_mask()")
+message("DONE: set threads")
 
 #####
 ### make raster cube
