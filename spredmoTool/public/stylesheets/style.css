@@ -28,3 +28,7 @@ body {
   background-color: #004241 !important;
   color: white !important;
 }
+
+input[type=text]{
+  width: 4rem;
+}

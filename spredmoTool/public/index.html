@@ -56,6 +56,14 @@
                 <label for="radioTrain">Trainingsdaten für ein neues Modell</label>
             </div>
             <div id="modelInDiv" class="form-group"></div>
+            <div id="aoiJSON">
+                <h5>Wählen Sie die gewünschte Area of Interest auf der Karte oder laden Sie eine Geo-JSON Datei hoch</h5>
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-md" id="geoJSONInput" placeholder="JSON-Code"/>
+                    <input type="button" class="btn btn-green input-group-append" value="Zur Karte hintzufügen" onclick="addJSONtoMap()"></input>
+                </div>
+                
+            </div>
             <div id="dateDiv">
                 <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
                 <label>
@@ -69,25 +77,17 @@
             </div></br>
             <div id="standardParams">
                 <h5>Weitere Einstellungen</h5>
-                <label for="resolution">Auflösung der Data-Cubes:</label>
+                <label for="resolution">Auflösung der Data-Cubes in Pixel:</label>
                 <select name="resolution" id="resolution">
                     <option value="res10">10x10</option>
                     <option value="res20">20x20</option>
                     <option value="res50">50x50</option>
-                </select>
-                <label for="clouds">Wolkenbedekung:</label>
-                <select name="clouds" id="clouds">
-                    <option value="cl10">10%</option>
-                    <option value="cl20">20%</option>
-                    <option value="cl30">30%</option>
-                    <option value="cl40">40%</option>
-                    <option value="cl50">50%</option>
-                    <option value="cl60">60%</option>
-                    <option value="cl70">70%</option>
-                    <option value="cl80">80%</option>
-                    <option value="cl90">90%</option>
-                    <option value="cl100">100%</option>
-                </select>
+                </select></br>
+                <label>Wolkenbedekung:</label>
+                <div class="slidecontainer">
+                    <input type="range" min="1" max="10" value="5" class="slider" id="myRange" oninput="displayAmountSlider(1)">
+                    <input type="text" id="amount" value="" maxlength="5" readonly></p>
+                  </div>
             </div>
             
             <script src="javascripts/inputconfig.js"></script>

@@ -1,5 +1,6 @@
 
 changeInputHTML("model", 0);// initializing call to visualize standard input on site load
+displayAmountSlider(0);
 
 /**
  * This method calls createFileUpload function to create a html file upload form and add other IO depending on the parameter "choice"
@@ -97,3 +98,11 @@ function createFileUpload(placeholder, maindiv){
       alert('Error : Wrong File format selected');
     }
   })
+
+function displayAmountSlider(status){
+  if(status==0){
+    document.getElementById("amount").value="50 %"
+  }else{
+    document.getElementById("amount").value=(document.getElementById("myRange").value*10)+" %";
+  }
+}
