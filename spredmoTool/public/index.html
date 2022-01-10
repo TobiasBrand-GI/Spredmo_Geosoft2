@@ -49,7 +49,7 @@
     <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
         
         <h1> Tool zur Berechnung der Area of Applicability</h1>
-        <form>
+        <form action="/plumber/" method="get" role="form">
             <div class="text-left">
                 <input type="radio" id="radioModel" name="modelInput" value="model" checked onclick="changeInputHTML('model',1)"/>
                 <label for="radioModel">Bereits trainiertes Modell</label></br>
@@ -89,10 +89,10 @@
                     <input type="text" id="amount" value="" maxlength="5" readonly></p>
                   </div>
             </div>
-            
             <script src="javascripts/inputconfig.js"></script>
+            <button type="submit" name="action" class="btn btn-green">Berechnen</button>
         </form>
-        <button onclick="plumberSend()" class="btn btn-green">Berechnen</button>
+        
     </div>
     <!--<div id="spacer"></div>-->
     <div id="mapid" class="col col-lg-5 col-12 border border-dark rounded align-self-lg-end"></div>
