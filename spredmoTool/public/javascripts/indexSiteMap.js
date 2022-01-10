@@ -61,6 +61,7 @@ mymap.on('draw:deleted', function(e){
     layers.eachLayer(function (layer) {
         drawnItems.clearLayers(); // Clearing old polygones
     });
+    addJSONtoInput("");
     if(Object.keys(drawnItems._layers).length==0){
         $(".leaflet-draw-toolbar-top").css("visibility","visible");
     }
