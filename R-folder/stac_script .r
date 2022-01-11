@@ -4,7 +4,8 @@ message("start processing")
 #####
 ### load shape as gpkg and transform crs
 library(sf)
-input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
+warning("!!! check path !!!")
+input_shape <- read_sf('C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
 # st_crs(input_shape)
 input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")
 # st_crs(input_shape_32632)
@@ -88,30 +89,36 @@ message("DONE: image_mask()")
 ### make raster cube
 library(dplyr) # needed for '%>%'
 # TODO: try catch wegen geom/geometry
+# im fs package ist evtl eine Methode, um herauszufinden,
+# ob das `geom` oder `geometry` heisst
 message("DO NOT WORRY :)")
 message("this raster cube function takes some time:")
+if (names(input_shape_32632) == geometry){
+  temp <- input_shape_32632$geometry
+} else {
+  temp <- input_shape_32632$geom
+}
+
 satelite_cube <- raster_cube(s2_collection, v.input_shape.overview, S2.mask) %>%
   select_bands(c("B02", "B03", "B04")) %>%
-  filter_geom(input_shape_32632$geometry) %>%    
-  plot(rgb = 3:1, zlim=c(0,1500)) #%>%
-#  write_tif(dir = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder",
-#            prefix = "output_",
-#            overviews = FALSE,
-#            COG = TRUE,
-#            rsmpl_overview = "nearest",
-#            creation_options = NULL,
-#            write_json_descr = FALSE,
-#            pack = NULL)
+  filter_geom(temp) %>%
+  # plot(rgb = 3:1, zlim=c(0,1500)) #%>% # write_tif() does not work when using plot() here 
+  warning("!!! check path !!!")
+  write_tif(dir = "C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder",
+            prefix = "output_",
+            overviews = FALSE,
+            COG = TRUE,
+            rsmpl_overview = "nearest",
+            creation_options = NULL,
+            write_json_descr = FALSE,
+            pack = NULL)
 message("DONE: raster_cube()")
-
-#####
-### TODO: #2 save as geoTiff
-# warum als geoTiff ???
-# write_tif(satelite_cube, dir = "./R/outputData")
-message("(NOT YET) DONE: save as geoTiff")
+message("DONE: save as geoTiff")
 
 #####
 ### printing processing time
 end_time <- Sys.time()
-time_differnece <- paste("total processing time: ", (end_time - start_time), " Minutes")
+time_differnece <- paste("total processing time: ", 
+                         round(100000*(end_time - start_time))/100000, 
+                         " Minutes")
 print(time_differnece)
