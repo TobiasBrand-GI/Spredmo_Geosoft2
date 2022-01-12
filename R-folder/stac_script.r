@@ -49,6 +49,7 @@ message("DONE: stac_search()")
 #####
 ### Creating an image collection with a filter
 library(gdalcubes)
+# reference for meaning of bands: https://gdal.org/drivers/raster/sentinel2.html
 assets = c("B01","B02","B03","B04","B05","B06", "B07","B08","B8A","B09","B11","SCL")
 s2_collection = stac_image_collection(items$features, 
                                       asset_names = assets, 
