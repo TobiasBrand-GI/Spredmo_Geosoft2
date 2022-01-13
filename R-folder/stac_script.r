@@ -23,7 +23,7 @@ bbox <- st_bbox(input_shape_32632)
 st_as_sfc(bbox) %>%
   st_transform("EPSG:4326") %>%
   st_bbox() -> bbox_wgs84
-bbox_wgs84
+#bbox_wgs84
 message("DONE: st_as_sfc() for bbox")
 
 #####
@@ -55,14 +55,14 @@ s2_collection = stac_image_collection(items$features,
                                       asset_names = assets, 
                                       property_filter = function(x) {
                                         x[["eo:cloud_cover"]] < 20})
-s2_collection
+# s2_collection
 message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
 cube_view_input_shape <- cube_view(srs = "EPSG:32632",
-                                   dx = 20,
-                                   dy = 20,
+                                   dx = 400, #20,
+                                   dy = 400, #20,
                                    dt = "P30D",
                                    aggregation = "median",
                                    resampling = "average",
@@ -94,34 +94,18 @@ message("DO NOT WORRY :)")
 message("this raster cube function takes some time:")
 if (!is.null(input_shape_32632$geometry)){
   temp <- input_shape_32632$geometry
-} else {
-  temp <- input_shape_32632$geom
-}
+} else  temp <- input_shape_32632$geom
+
 warning("!!! check path !!!")
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
-  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
+  #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
   # NDVI - Normalized Difference Vegetation Index
-  apply_pixel("(B08-B04)/(B08+B04)", "NDVI", keep_bands = TRUE) %>% 
+  #  apply_pixel("(B08-B04)/(B08+B04)", "NDVI", keep_bands = TRUE) %>% 
   # Bare Soil Index
-  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
+  #  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
   # Built-up Area Extraction Index
-  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
-  reduce_time(c("median(B04)",
-                "median(B02)",
-                "median(B03)", 
-                "median(B01)",
-                "median(B05)",
-                "median(B06)", 
-                "median(B07)", 
-                "median(B08)",
-                "median(B8A)", 
-                "median(B09)",
-                "median(B11)", 
-                "median(B12)", 
-                "median(NDVI)", 
-                "median(BSI)", 
-                "median(BAEI)")) %>%
+  #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
   filter_geom(temp) %>%
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   write_tif(dir = "C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder",
