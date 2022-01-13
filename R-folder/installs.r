@@ -35,4 +35,5 @@ library(foreach)
 library(iterators)
 library(parallel)
 library(doParallel)
+library(gdalcubes)
 
