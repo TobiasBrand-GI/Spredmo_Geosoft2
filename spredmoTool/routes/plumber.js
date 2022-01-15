@@ -1,15 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const axios = require('axios');
+var dataAPI = require('./../public/javascripts/download_visualize')
 
-router.get('/',function(req, res, next) {
-  axios.get('http://127.0.0.1:5598/echo?msg=hello')
-    .then(response => {
-      console.log(response.data.msg);
-      res.send(response.data.msg[0])
-    })
-    .catch(error => {
-      console.log(error);
-    });
-})
+router.get('/',async function(req, res) {
+  let response = await dataAPI.getData();
+  res.redirect("/download.html")
+}
+)
 module.exports = router;
