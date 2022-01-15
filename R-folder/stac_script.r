@@ -1,3 +1,23 @@
+
+# load always
+library(sf)
+library(sp)
+library(raster)
+library(ggplot2)
+library(lattice)
+library(caret)
+library(viridisLite)
+library(viridis)
+library(latticeExtra)
+library(randomForest)
+library(CAST)
+library(foreach)
+library(iterators)
+library(parallel)
+library(doParallel)
+library(gdalcubes)
+
+
 start_time <- Sys.time()
 message("start processing")
 
@@ -110,7 +130,7 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   write_tif(dir = "C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder",
             prefix = "output_",
-            overviews = FALSE,
+            overviews = TRUE,
             COG = TRUE,
             rsmpl_overview = "nearest",
             creation_options = NULL,
