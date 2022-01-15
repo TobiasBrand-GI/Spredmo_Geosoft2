@@ -3,7 +3,7 @@ var router = express.Router();
 const axios = require('axios');
 
 router.get('/',function(req, res, next) {
-  axios.get('http://127.0.0.1:5598/echo?msg=hello')
+  axios.get('http://127.0.0.1:5433/echo?msg=hallo')
     .then(response => {
       console.log(response.data.msg);
       res.send(response.data.msg[0])

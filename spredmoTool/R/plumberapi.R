@@ -3,6 +3,18 @@ library(plumber)
 
 #* @apiTitle Plumber Example API
 
+
+#* Log some information about the incoming request
+#* @filter logger
+function(req) {
+  cat(as.character(Sys.time()), "-",
+      req$REQUEST_METHOD, req$PATH_INFO, "-",
+      req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n")
+  
+  # Forward the request
+  forward()
+}
+
 #* @filter cors
 cors <- function(req, res) {
   
@@ -11,12 +23,11 @@ cors <- function(req, res) {
   if (req$REQUEST_METHOD == "OPTIONS") {
     res$setHeader("Access-Control-Allow-Methods","*")
     res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
-    res$status <- 200 
+    res$status <- 200
     return(list())
   } else {
     plumber::forward()
   }
-  
 }
 
 #* Echo back the input
@@ -29,3 +40,4 @@ function(msg = "") {
       "The message is: '", msg , "'")
   )
 }
+
