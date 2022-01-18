@@ -26,8 +26,8 @@ message("start processing")
 library(sf)
 warning("!!! check path !!!")
 input_shape <- read_sf('C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
-# st_crs(input_shape)
-input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")
+st_crs(input_shape)
+input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")     #  "EPSG:4236")
 # st_crs(input_shape_32632)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
@@ -63,7 +63,7 @@ message("DONE: stac_search()")
 #####
 ### explor results
 # names(items$features[[10]])
-# items$features[[10]]$assets$B01
+# items$features[[10]]$assets$SCL
 # items$features[[10]]$properties$`eo:cloud_cover`
 
 #####
@@ -80,7 +80,7 @@ message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
-cube_view_input_shape <- cube_view(srs = "EPSG:32632",
+cube_view_input_shape <- cube_view(srs = "EPSG:32632",   # "EPSG:4326",
                                    dx = 400, #20,
                                    dy = 400, #20,
                                    dt = "P30D",
@@ -111,12 +111,11 @@ message("DONE: set threads")
 ### make raster cube
 library(dplyr) # needed for '%>%'
 message("DO NOT WORRY :)")
-message("this raster cube function takes some time:")
 if (!is.null(input_shape_32632$geometry)){
   temp <- input_shape_32632$geometry
 } else  temp <- input_shape_32632$geom
-
 warning("!!! check path !!!")
+message("this raster cube function takes some time:")
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
@@ -128,6 +127,7 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
   filter_geom(temp) %>%
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
+  # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
   write_tif(dir = "C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder",
             prefix = "output_",
             overviews = TRUE,
@@ -139,10 +139,11 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
 message("DONE: raster_cube()")
 message("DONE: save as geoTiff")
 
+
 #####
 ### printing processing time
 end_time <- Sys.time()
-time_differnece <- paste("total processing time: ", 
+time_differnece <- paste("total processing time: ",
                          round(100000 * (end_time - start_time)) / 100000, 
                          " Minutes")
 print(time_differnece)
