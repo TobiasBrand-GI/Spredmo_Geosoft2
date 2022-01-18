@@ -1,3 +1,14 @@
+library(raster)
+library(caret)
+library(sf)
+library(CAST)
+#additional required packages:
+library(latticeExtra)
+library(foreach)
+library(iterators)
+library(doParallel)
+library(parallel)
+# library(Orcs)
 
 
 #####
@@ -66,11 +77,15 @@ model
 prediction <- predict(sen_ms,model)
 
 
-
-###
-# und weiter bin ich noch nicht gekommen :)
-###
-
-
-
-
+#####
+## Area of Applicability
+# needed packages for following code are:
+#    foreach, iterators, parallel, doParallel, cast, caret
+# The calculation of the AOA is quite time consuming.
+# To make a bit faster we use a parallelization.
+cl <- makeCluster(4)
+registerDoParallel(cl)
+AOA <- aoa(sen_ms,model,cl=cl)
+# plot(AOA)
+message(paste0("Percentage of Münster that is within the AOA: ",
+             round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
