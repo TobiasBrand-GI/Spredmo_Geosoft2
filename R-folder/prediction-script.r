@@ -16,13 +16,13 @@ library(parallel)
 warning("!!! check path !!!")
 sen_ms <- stack("C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
 
-rgbplot_ms <- spplot(sen_ms[[1]],  
-                     col.regions = "transparent",
-                     sp.layout = rgb2spLayout(sen_ms[[3:1]], 
-                                              quantiles = c(0.02, 0.98), 
-                                              alpha = 1))
-plot(sen_ms)
-plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
+# rgbplot_ms <- spplot(sen_ms[[1]],  
+#                      col.regions = "transparent",
+#                      sp.layout = rgb2spLayout(sen_ms[[3:1]], 
+#                                               quantiles = c(0.02, 0.98), 
+#                                               alpha = 1))
+# plot(sen_ms)
+# plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
 
 
 #####
@@ -32,12 +32,12 @@ plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
 ### Reference data
 warning("!!! check path !!!")
 trainSites <- readRDS("C:/Users/.../GitHub/OpenGeoHub_2021/data/....RDS")
-names(trainSites)
+# names(trainSites)
 trainDat <- trainSites[trainSites$Region!="Muenster",]
-names(trainDat)
+# names(trainDat)
 validationDat <- trainSites[trainSites$Region=="Muenster",]
-names(validationDat)
-head(trainSites)
+# names(validationDat)
+# head(trainSites)
 
 #see unique regions in train set:
 unique(trainDat$Region)
@@ -54,7 +54,7 @@ trainDat <- trainDat[complete.cases(trainDat),]
 
 predictors <- names(sen_ms)
 response <- "Label"
-head.matrix(response)
+# head.matrix(response)
 
 
 #####
