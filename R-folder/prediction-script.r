@@ -45,7 +45,6 @@ unique(trainDat$Region)
 
 #####
 ### Predictors and response
-set.seed(100)
 trainids <- createDataPartition(trainDat$ID,list=FALSE,p=0.15)
 # head.matrix(trainids) # trainids is not a list, but matrix
 trainDat <- trainDat[trainids,]
@@ -61,7 +60,6 @@ response <- "Label"
 ## Model training and validation
 # train the model
 ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
-set.seed(100)
 model <- train(trainDat[,predictors],
                trainDat[,response],
                method="rf",
