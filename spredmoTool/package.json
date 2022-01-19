@@ -11,6 +11,8 @@
     "core-js": "^3.19.1",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "georaster": "^1.5.6",
+    "georaster-layer-for-leaflet": "^3.5.0",
     "geotiff": "^1.0.9",
     "http-errors": "~1.6.3",
     "leaflet-geotiff-2": "^1.1.0",

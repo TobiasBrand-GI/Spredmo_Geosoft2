@@ -1,19 +1,17 @@
-
 const plottyRenderer = new L.LeafletGeotiff.plotty({
-    displayMin: -100,
-    displayMax: 100,
+    band:[0],
+    displayMin: 2,
+    displayMax: 10,
     clampLow: false,
     clampHigh: false,
+    colorScale: "viridis"
   });
 
 function loadTIFF(){
-    const windurl ="../images/wind_direction.tif";
-    //const ownurl ="../images/differenz_waldflaeche.tif"
+    const windurl ="./../images/test_changedEPSG.tif";
     const options={renderer:plottyRenderer,};
-    var tifflayer = new L.LeafletGeotiff(windurl, options).addTo(mymap);
-    //var owntifflayer = new L.LeafletGeotiff(ownurl, options).addTo(mymap);
+    var tifflayer = new L.LeafletGeotiff(windurl, options);
+    tifflayer.addTo(rasterItems);
     console.log(tifflayer);
-    //console.log(owntifflayer);
 }
-
 loadTIFF();
