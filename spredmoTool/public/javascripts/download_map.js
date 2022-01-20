@@ -9,7 +9,6 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 
 function loadTIFF(url){
   var url_to_geotiff_file =url;
-
   fetch(url_to_geotiff_file)
     .then(response => response.arrayBuffer())
     .then(arrayBuffer => {
@@ -21,6 +20,7 @@ function loadTIFF(url){
             pixelValuesToColorFn: values => values[0] > 100 ? '#ff0000' : '#0000ff',
           resolution: 64 // optional parameter for adjusting display resolution
         });
+        console.log(georaster)
         layer.addTo(dmap);
         dmap.fitBounds(layer.getBounds());
     });

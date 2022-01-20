@@ -13,15 +13,15 @@ function changeInputHTML(choice, status){
         div.innerHTML="";
     }
     if(choice=="model"){
-        createFileUpload("Dieses Modell", div);
+        createFileUpload("Dieses Modell", div, "model");
     }
     else if(choice=="data"){
-        createFileUpload("Diese Trainingsdaten", div);
-        let p = document.createElement("INPUT");
+        createFileUpload("Diese Trainingsdaten", div, "tdata");
+        /*let p = document.createElement("INPUT");
         p.setAttribute("type","number");
         let br= document.createElement("br");
         div.appendChild(br);
-        div.appendChild(p);
+        div.appendChild(p);*/
     }
 }
 
@@ -30,7 +30,7 @@ function changeInputHTML(choice, status){
  * @param {String} placeholder text that will be shown in the upload field
  * @param {*} maindiv html div-container to append the file upload on
  */
-function createFileUpload(placeholder, maindiv){
+function createFileUpload(placeholder, maindiv, name){
     let d= document.createElement("DIV");
     d.setAttribute("class", "input-group");
 
@@ -52,10 +52,14 @@ function createFileUpload(placeholder, maindiv){
     b.id="readButton";
     b.setAttribute("class", "btn btn-green");
 
+    let hData = document.createElement("INPUT");
+    hData.setAttribute("name", "modus")
+    hData.value=name;
+    hData.style.display="none";
     bd.appendChild(b);
 
     d.appendChild(f);
-    //d.appendChild(l);
+    d.appendChild(hData);
     d.appendChild(bd);
     maindiv.appendChild(d);
 }

@@ -12,7 +12,7 @@ async function visualize_Results(){
             document.getElementById("loading").style.display="none"
             document.getElementById("mapid").style.display="block"
             dmap.invalidateSize();
-            loadTIFF("../images/subset_2015.tif");
+            loadTIFF("../images/new.tif");
         }, 2000)
     }catch(err){
         console.log(err)
