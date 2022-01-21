@@ -1,20 +1,22 @@
 
 # load always
-library(sf)
-library(sp)
 library(raster)
-library(ggplot2)
-library(lattice)
 library(caret)
-library(viridisLite)
-library(viridis)
-library(latticeExtra)
-library(randomForest)
+library(sf)
 library(CAST)
+library(sp)
+#additional required packages:
+library(latticeExtra)
 library(foreach)
 library(iterators)
-library(parallel)
 library(doParallel)
+library(parallel)
+# library(Orcs)
+library(ggplot2)
+library(lattice)
+library(viridisLite)
+library(viridis)
+library(randomForest)
 library(gdalcubes)
 
 
@@ -25,7 +27,8 @@ message("start processing")
 ### load shape as gpkg and transform crs
 library(sf)
 warning("!!! check path !!!")
-input_shape <- read_sf('C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
+input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
+# input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/input_test_mit_thomas_1.gpkg')
 st_crs(input_shape)
 input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")     #  "EPSG:4236")
 # st_crs(input_shape_32632)
@@ -65,12 +68,18 @@ message("DONE: stac_search()")
 # names(items$features[[10]])
 # items$features[[10]]$assets$SCL
 # items$features[[10]]$properties$`eo:cloud_cover`
+targetSystem <- toString(items$features[[1]]$properties$`proj:epsg`)
+targetString <- paste('EPSG:',targetSystem)
+
+
+
 
 #####
 ### Creating an image collection with a filter
 library(gdalcubes)
 # reference for meaning of bands: https://gdal.org/drivers/raster/sentinel2.html
-assets <- c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")
+assets <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
+  #c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")
 s2_collection = stac_image_collection(items$features, 
                                       asset_names = assets, 
                                       property_filter = function(x) {
@@ -80,7 +89,7 @@ message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
-cube_view_input_shape <- cube_view(srs = "EPSG:32632",   # "EPSG:4326",
+cube_view_input_shape <- cube_view(srs = targetString,   # "EPSG:4326",
                                    dx = 400, #20,
                                    dy = 400, #20,
                                    dt = "P30D",
@@ -114,8 +123,6 @@ message("DO NOT WORRY :)")
 if (!is.null(input_shape_32632$geometry)){
   temp <- input_shape_32632$geometry
 } else  temp <- input_shape_32632$geom
-warning("!!! check path !!!")
-message("this raster cube function takes some time:")
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
@@ -125,19 +132,113 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   #  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
   # Built-up Area Extraction Index
   #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
-  filter_geom(temp) %>%
+  filter_geom(temp)
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
-  write_tif(dir = "C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder",
-            prefix = "output_",
-            overviews = TRUE,
-            COG = TRUE,
-            rsmpl_overview = "nearest",
-            creation_options = NULL,
-            write_json_descr = FALSE,
-            pack = NULL)
 message("DONE: raster_cube()")
+
+warning("!!! check path !!!")
+message("this saving function takes some time:")
+
+write_tif(satelite_cube,
+          dir = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder",
+          prefix = "output_",
+          overviews = FALSE,
+          COG = TRUE,
+          rsmpl_overview = "nearest",
+          creation_options = NULL,
+          write_json_descr = FALSE,
+          pack = NULL)
 message("DONE: save as geoTiff")
+
+
+#####
+### Raster data (predictor variables)
+warning("!!! check path !!!")
+sen_ms <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
+# rename bands
+names(sen_ms) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
+# plot(sen_ms)
+# plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
+message("DONE: load as RasterStack")
+
+
+#####
+# TODO:
+# should not be possible only for Muenster
+# ... for the whole world 
+### Reference data
+warning("!!! check path !!!")
+trainSites <- readRDS("C:/Users/49157/Documents/GitHub/OpenGeoHub_2021/data/data_combined_ll.RDS")
+# names(trainSites)
+trainDat <- trainSites[trainSites$Region!="Muenster",]
+# names(trainDat)
+validationDat <- trainSites[trainSites$Region=="Muenster",]
+# names(validationDat)
+# head(trainSites)
+message("DONE: load Referencedata as RDS")
+
+#see unique regions in train set:
+unique(trainDat$Region)
+message("DONE: delete redudant data")
+
+
+
+#####
+### prepair training parameters
+trainids <- createDataPartition(trainDat$ID,list=FALSE,p=0.15)
+# head.matrix(trainids) # trainids is not a list, but matrix
+trainDat <- trainDat[trainids,]
+trainDat <- trainDat[complete.cases(trainDat),]
+### Predictors and response
+predictors <- head(names(sen_ms), -1) # without the "SCL"-band 
+response <- "Label"
+# head.matrix(response)
+message("DONE: prepair training parameters")
+
+
+#####
+## Model training and validation
+# train the model
+ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
+model <- train(trainDat[,predictors],
+               trainDat[,response],
+               method="rf",
+               metric="Kappa",
+               trControl=ctrl_default,
+               importance=TRUE,
+               ntree=50)
+model
+message("DONE: train model")
+
+
+#####
+## Model prediction
+prediction <- predict(sen_ms,model)
+message("DONE: prediction")
+
+
+#####
+## Area of Applicability
+# needed packages for following code are:
+#    foreach, iterators, parallel, doParallel, cast, caret
+# The calculation of the AOA is quite time consuming.
+# To make a bit faster we use a parallelization.
+cl <- makeCluster(4)
+registerDoParallel(cl)
+AOA <- aoa(sen_ms,model,cl=cl)
+# plot(AOA)
+message(paste0("Percentage of Muenster that is within the AOA: ",
+               round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
+message("DONE: AOA culculation")
+
+
+###
+# TODO: save prediction - for download
+# TODO: save AOA - same
+# TODO: Vorschlag für Samplepoints abspeichern
+# TODO: for demontration: processing times less than 20 seconds 
+###
 
 
 #####
