@@ -15,13 +15,9 @@ library(parallel)
 ### Raster data (predictor variables)
 warning("!!! check path !!!")
 sen_ms <- stack("C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
-
-# rgbplot_ms <- spplot(sen_ms[[1]],  
-#                      col.regions = "transparent",
-#                      sp.layout = rgb2spLayout(sen_ms[[3:1]], 
-#                                               quantiles = c(0.02, 0.98), 
-#                                               alpha = 1))
-# plot(sen_ms)
+# rename bands
+names(sen_ms) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
+plot(sen_ms)
 # plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
 
 
@@ -32,7 +28,7 @@ sen_ms <- stack("C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01
 ### Reference data
 warning("!!! check path !!!")
 trainSites <- readRDS("C:/Users/.../GitHub/OpenGeoHub_2021/data/....RDS")
-# names(trainSites)
+names(trainSites)
 trainDat <- trainSites[trainSites$Region!="Muenster",]
 # names(trainDat)
 validationDat <- trainSites[trainSites$Region=="Muenster",]
@@ -51,7 +47,7 @@ trainDat <- trainDat[trainids,]
 trainDat <- trainDat[complete.cases(trainDat),]
 
 
-predictors <- names(sen_ms)
+predictors <- head(names(sen_ms), -1) # without the "SCL"-band 
 response <- "Label"
 # head.matrix(response)
 
@@ -87,3 +83,4 @@ AOA <- aoa(sen_ms,model,cl=cl)
 # plot(AOA)
 message(paste0("Percentage of Münster that is within the AOA: ",
              round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
+
