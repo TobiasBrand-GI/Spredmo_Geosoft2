@@ -30,7 +30,7 @@ warning("!!! check path !!!")
 input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
 # input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/input_test_mit_thomas_1.gpkg')
 st_crs(input_shape)
-input_shape_32632 <- st_transform(input_shape, crs="EPSG:32632")     #  "EPSG:4236")
+input_shape_32631 <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
 # st_crs(input_shape_32632)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
@@ -42,7 +42,7 @@ message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
 #####
 ### prepair bbox
-bbox <- st_bbox(input_shape_32632)
+bbox <- st_bbox(input_shape_32631)
 st_as_sfc(bbox) %>%
   st_transform("EPSG:4326") %>%
   st_bbox() -> bbox_wgs84
@@ -110,7 +110,7 @@ s2_mask <- image_mask("SCL", values = c(3,8,9))
 message("DONE: image_mask()")
 
 #####
-### set threads (logische Prozessoren) 
+### set threads / logische Prozessoren 
 library(magrittr)
 gdalcubes_options(threads = 6)
 message("DONE: set threads")
@@ -120,9 +120,9 @@ message("DONE: set threads")
 ### make raster cube
 library(dplyr) # needed for '%>%'
 message("DO NOT WORRY :)")
-if (!is.null(input_shape_32632$geometry)){
-  temp <- input_shape_32632$geometry
-} else  temp <- input_shape_32632$geom
+if (!is.null(input_shape_32631$geometry)){
+  temp <- input_shape_32631$geometry
+} else  temp <- input_shape_32631$geom
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
@@ -236,7 +236,7 @@ message("DONE: AOA culculation")
 ###
 # TODO: save prediction - for download
 # TODO: save AOA - same
-# TODO: Vorschlag für Samplepoints abspeichern
+# TODO: Vorschlag fï¿½r Samplepoints abspeichern
 # TODO: for demontration: processing times less than 20 seconds 
 ###
 
