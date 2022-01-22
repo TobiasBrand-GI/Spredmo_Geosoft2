@@ -1,3 +1,6 @@
+#####
+### clear r environment
+try(rm(list = ls()), message("Done: clear r environment"))
 
 
 # load always
@@ -31,7 +34,8 @@ warning("!!! check path !!!")
 # input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
 input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg')
 st_crs(input_shape)
-input_shape_32631 <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
+plot(input_shape)
+input_shape_transformed <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
 # st_crs(input_shape_32632)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
@@ -45,7 +49,7 @@ message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
 #####
 ### prepair bbox
-bbox <- st_bbox(input_shape_32631)
+bbox <- st_bbox(input_shape_transformed)
 st_as_sfc(bbox) %>%
   st_transform("EPSG:4326") %>%
   st_bbox() -> bbox_wgs84
