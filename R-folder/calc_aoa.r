@@ -27,8 +27,8 @@ message("start processing")
 ### load shape as gpkg and transform crs
 library(sf)
 warning("!!! check path !!!")
-input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
-# input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/input_test_mit_thomas_1.gpkg')
+# input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
+input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg')
 st_crs(input_shape)
 input_shape_32631 <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
 # st_crs(input_shape_32632)
@@ -70,7 +70,7 @@ message("DONE: stac_search()")
 # items$features[[10]]$properties$`eo:cloud_cover`
 targetSystem <- toString(items$features[[1]]$properties$`proj:epsg`)
 targetString <- paste('EPSG:',targetSystem)
-
+input_shape_transformed <- st_transform(input_shape, crs=targetString)     #  "EPSG:4236")
 
 
 
@@ -90,8 +90,8 @@ message("DONE: stac_image_collection()")
 #####
 ### generate data cube
 cube_view_input_shape <- cube_view(srs = targetString,   # "EPSG:4326",
-                                   dx = 400, #20,
-                                   dy = 400, #20,
+                                   dx = 20, #20,
+                                   dy = 20, #20,
                                    dt = "P30D",
                                    aggregation = "median",
                                    resampling = "average",
@@ -120,9 +120,9 @@ message("DONE: set threads")
 ### make raster cube
 library(dplyr) # needed for '%>%'
 message("DO NOT WORRY :)")
-if (!is.null(input_shape_32631$geometry)){
-  temp <- input_shape_32631$geometry
-} else  temp <- input_shape_32631$geom
+if (!is.null(input_shape_transformed$geometry)){
+  temp <- input_shape_transformed$geometry
+} else  temp <- input_shape_transformed$geom
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
@@ -159,7 +159,7 @@ sen_ms <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/outpu
 # rename bands
 names(sen_ms) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
 # plot(sen_ms)
-# plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
+plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
 message("DONE: load as RasterStack")
 
 
@@ -216,7 +216,8 @@ message("DONE: train model")
 ## Model prediction
 prediction <- predict(sen_ms,model)
 message("DONE: prediction")
-writeRaster(prediction, filename = "lulc-prediction.tif")
+plot(prediction)
+writeRaster(prediction, filename = "lulc-prediction.tif", overwrite=TRUE)
 message("DONE: save prediction.tif")
 
 
@@ -229,12 +230,12 @@ message("DONE: save prediction.tif")
 cl <- makeCluster(4)
 registerDoParallel(cl)
 AOA <- aoa(sen_ms,model,cl=cl)
-# plot(AOA)
+plot(AOA)
 message(paste0("Percentage of Muenster that is within the AOA: ",
                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
 message("DONE: AOA culculation")
-writeRaster(AOA$AOA, filename = "aoa.tif")
-writeRaster(AOA$DI, filename = "di_of_aoa.tif")
+writeRaster(AOA$AOA, filename = "aoa.tif", overwrite=TRUE)
+writeRaster(AOA$DI, filename = "di_of_aoa.tif", overwrite=TRUE)
 message("DONE: save AOA and DI as tif")
 
 
@@ -242,7 +243,7 @@ message("DONE: save AOA and DI as tif")
 ###
 # TODO: save prediction - for download
 # TODO: save AOA - same
-# TODO: Vorschlag f�r Samplepoints abspeichern
+# TODO: Vorschlag fuer Samplepoints abspeichern
 # TODO: for demontration: processing times less than 20 seconds 
 ###
 
