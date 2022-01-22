@@ -1,4 +1,5 @@
 
+
 # load always
 library(raster)
 library(caret)
@@ -23,9 +24,9 @@ library(gdalcubes)
 start_time <- Sys.time()
 message("start processing")
 
+
 #####
 ### load shape as gpkg and transform crs
-library(sf)
 warning("!!! check path !!!")
 # input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
 input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg')
@@ -34,11 +35,13 @@ input_shape_32631 <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:42
 # st_crs(input_shape_32632)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
+
 #####
 ### visualisation in RStudio
 # plot(input_shape_32632)
 # library(mapview)
 # mapview(input_shape_32632)
+
 
 #####
 ### prepair bbox
@@ -48,6 +51,7 @@ st_as_sfc(bbox) %>%
   st_bbox() -> bbox_wgs84
 #bbox_wgs84
 message("DONE: st_as_sfc() for bbox")
+
 
 #####
 ### stac-request
@@ -63,15 +67,20 @@ items = s %>%
 # items
 message("DONE: stac_search()")
 
+
 #####
 ### explor results
 # names(items$features[[10]])
 # items$features[[10]]$assets$SCL
 # items$features[[10]]$properties$`eo:cloud_cover`
+
+
+#####
+### get right crs
 targetSystem <- toString(items$features[[1]]$properties$`proj:epsg`)
 targetString <- paste('EPSG:',targetSystem)
 input_shape_transformed <- st_transform(input_shape, crs=targetString)     #  "EPSG:4236")
-
+message("DONE: get right crs")
 
 
 #####
@@ -86,6 +95,7 @@ s2_collection = stac_image_collection(items$features,
                                         x[["eo:cloud_cover"]] < 20})
 # s2_collection
 message("DONE: stac_image_collection()")
+
 
 #####
 ### generate data cube
@@ -104,10 +114,12 @@ cube_view_input_shape <- cube_view(srs = targetString,   # "EPSG:4326",
 # cube_view_input_shape
 message("DONE: cube_view()")
 
+
 #####
 ### mask for clouds and their shadows
 s2_mask <- image_mask("SCL", values = c(3,8,9))
 message("DONE: image_mask()")
+
 
 #####
 ### set threads / logische Prozessoren 
@@ -137,9 +149,11 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
 message("DONE: raster_cube()")
 
+
+#####
+### save data from data cube as GeoTiff
 warning("!!! check path !!!")
 message("this saving function takes some time:")
-
 write_tif(satelite_cube,
           dir = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder",
           prefix = "output_",
@@ -178,10 +192,11 @@ validationDat <- trainSites[trainSites$Region=="Muenster",]
 # head(trainSites)
 message("DONE: load Referencedata as RDS")
 
-#see unique regions in train set:
+
+#####
+### see unique regions in train set:
 unique(trainDat$Region)
 message("DONE: delete redudant data")
-
 
 
 #####
