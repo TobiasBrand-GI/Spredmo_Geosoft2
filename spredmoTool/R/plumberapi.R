@@ -1,10 +1,12 @@
 library(plumber)
 
 
+#plumb("plumberapi.R") %>%
+#  pr_run(port=8000)
+
 #* @apiTitle Plumber Example API
 
-pr("plumberapi.R") %>%
-  pr_run(port=8000)
+
 
 #* Log some information about the incoming request
 #* @filter logger
@@ -30,6 +32,31 @@ cors <- function(req, res) {
   } else {
     plumber::forward()
   }
+}
+
+
+#* post Endpunkt der AOA berrechnung MIT Model 
+#* @post /aoamm
+#* @preempt cors
+function(model, AOI, cloudcover) {
+  
+}
+
+#* post Endpunkt der AOA berrechnung OHNE Model
+#* @post /aoaom
+#* @preempt cors
+function(trainData, AOI, cloudcover) {
+  
+}
+
+#* get Endpunkt für die results
+#* @param prediction
+#* @param AOA
+#* @param samplePoints
+#* @get /results
+#* @preempt cors
+function(prediction, AOA, samplePoints) {
+  
 }
 
 #* Echo back the input
