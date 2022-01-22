@@ -216,6 +216,8 @@ message("DONE: train model")
 ## Model prediction
 prediction <- predict(sen_ms,model)
 message("DONE: prediction")
+writeRaster(prediction, filename = "lulc-prediction.tif")
+message("DONE: save prediction.tif")
 
 
 #####
@@ -231,6 +233,10 @@ AOA <- aoa(sen_ms,model,cl=cl)
 message(paste0("Percentage of Muenster that is within the AOA: ",
                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
 message("DONE: AOA culculation")
+writeRaster(AOA$AOA, filename = "aoa.tif")
+writeRaster(AOA$DI, filename = "di_of_aoa.tif")
+message("DONE: save AOA and DI as tif")
+
 
 
 ###
