@@ -39,4 +39,15 @@ router.get('/results',function(req, res) {
     })
 }
 )
+
+/*router.get('/download',function(req, res) {
+  axios({
+    url: 'http://localhost:3000/public/images/di_of_aoa.tif',
+    method: 'GET',
+    responseType: 'blob', // important
+  }).then((response) => {
+    res.send(response)
+  })
+}
+)*/
 module.exports = router;

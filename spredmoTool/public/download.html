@@ -48,7 +48,7 @@
         
         <h1>Daten-Download</h1>
         <h4>Bitte wählen Sie aus, welche Daten Sie herunterladen wollen!</h4>
-        <form class="text-left">
+        <form class="text-left" action="javascript:download()">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="" id="checkAOA">
                 <label class="form-check-label" for="flexCheckDefault">Area of Applicability Rasterdaten</label>
@@ -59,9 +59,13 @@
             </div>
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="" id="checkModel">
-                <label class="form-check-label" for="flexCheckDefault">Model-Datei herunterladen</label>
+                <label class="form-check-label" for="flexCheckDefault">Model-Datei</label>
             </div>
-            <button type="submit" class="btn btn-green">Jetzt herunterladen</button>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="checkClass">
+                <label class="form-check-label" for="flexCheckDefault">Klassifizierung Rasterdaten</label>
+            </div>
+            <button type="submit" id="dwButton" class="btn btn-green" disabled>Jetzt herunterladen</button>
         </form>
     </div>
     <div id="mag-group" class="col col-lg-8 col-12 align-self-lg-end">
@@ -71,6 +75,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
     <script src="https://unpkg.com/georaster"></script>
     <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+    <script src="https://unpkg.com/chroma-js"></script>
     <script src="javascripts/download_map.js"></script>
     <script src="javascripts/map_api_calls.js" ></script>
 

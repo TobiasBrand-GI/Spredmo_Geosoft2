@@ -14,11 +14,17 @@ function loadTIFF(url){
     .then(arrayBuffer => {
       parseGeoraster(arrayBuffer).then(georaster => {
         console.log("georaster:", georaster);
+        var scale = chroma.scale(['white','brown', 'orange', 'red', 'blue', 'green', 'pink', 'black', 'purple', 'yellow']).domain([0,1,2,3,4,5,6,7,8,9]);
         var layer = new GeoRasterLayer({
             georaster: georaster,
-            opacity: 0.7,
-            pixelValuesToColorFn: values => values[0] > 100 ? '#ff0000' : '#0000ff',
-          resolution: 64 // optional parameter for adjusting display resolution
+            opacity: 1,
+            pixelValuesToColorFn: function (values) {
+              var population = values[0];
+              if (population === -200) return;
+              if (population < 0) return;
+              return scale(population).hex();
+            },
+          resolution: 64 // optional parameter for adjusting display resolution values[0] > 8 ? '#ff0000' : '#0000ff',
         });
         console.log(georaster)
         layer.addTo(dmap);
