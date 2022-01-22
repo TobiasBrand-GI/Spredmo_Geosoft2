@@ -15,11 +15,11 @@ function changeInputHTML(choice, status){
         btndiv.innerHTML="";
     }
     if(choice=="model"){
-        createFileUpload("Dieses Modell", div);
+        createFileUpload("Dieses Modell", div, "model");
     }
     else if(choice=="data"){
-        createFileUpload("Diese Trainingsdaten", div);
-        let p = document.createElement("INPUT");
+        createFileUpload("Diese Trainingsdaten", div, "tdata");
+        /*let p = document.createElement("INPUT");
         p.setAttribute("type","number");
         
         let p1 = document.createElement("INPUT");
@@ -36,12 +36,7 @@ function changeInputHTML(choice, status){
         let br= document.createElement("br");
 
         div.appendChild(br);
-        div.appendChild(p);
-        div.appendChild(p1);
-        div.appendChild(br1);
-        div.appendChild(p2);
-        div.appendChild(p3);
-        
+        div.appendChild(p);*/
     }
 }
 
@@ -50,7 +45,7 @@ function changeInputHTML(choice, status){
  * @param {String} placeholder text that will be shown on the button
  * @param {*} maindiv html div-container to append the file upload on
  */
-function createFileUpload(placeholder, maindiv){
+function createFileUpload(placeholder, maindiv, name){
     let d= document.createElement("DIV");
     d.setAttribute("class", "input-group");
 
@@ -70,7 +65,16 @@ function createFileUpload(placeholder, maindiv){
     b.setAttribute("class", "btn btn-green");
     b.setAttribute("type", "submit");
 
-    btndiv.appendChild(b);
+    let hData = document.createElement("INPUT");
+    hData.setAttribute("name", "modus")
+    hData.value=name;
+    hData.style.display="none";
+    bd.appendChild(b);
+
+    d.appendChild(f);
+    d.appendChild(hData);
+    d.appendChild(bd);
+    maindiv.appendChild(d);
 }
 /**
  * Functionality to add Pois per JSON-File

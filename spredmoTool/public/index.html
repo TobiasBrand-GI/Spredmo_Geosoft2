@@ -35,9 +35,6 @@
                     <a class="nav-link active rounded" href="index.html">Startseite</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link rounded" href="download.html">Download</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link rounded" href="impressum.html">Impressum</a>
                 </li>
             </ul>
@@ -48,21 +45,21 @@
     <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
         
         <h1> Tool zur Berechnung der Area of Applicability</h1>
-        <form action="/plumber/" method="get" role="form">
+        <form action="/plumber/" method="post" role="form">
             <div class="text-left">
                 <input type="radio" id="radioModel" name="modelInput" value="model" checked onclick="changeInputHTML('model',1)"/>
                 <label for="radioModel">Bereits trainiertes Modell</label></br>
                 <input type="radio" id="radioTrain" name="modelInput" value="train" onclick="changeInputHTML('data',1)"/>
                 <label for="radioTrain">Trainingsdaten für ein neues Modell</label>
             </div>
-            <div id="modelInDiv" class="form-group"></div>
+            <div id="modelInDiv" class="form-group"></div></br>
             <div id="aoiJSON">
-                <h5>Wählen Sie die gewünschte Area of Interest auf der Karte oder laden Sie eine Geo-JSON Datei hoch</h5>
+                <h5>Wählen Sie die gewünschte Area of Interest auf der Karte oder fügen Sie einen Geo-JSON Code ein</h5>
                 <div class="input-group">
                     <input type="text" class="form-control form-control-md" id="geoJSONInput" placeholder="JSON-Code"/>
                     <input type="button" class="btn btn-green input-group-append" value="Zur Karte hintzufügen" onclick="addJSONtoMap()"></input>
                 </div>
-            </div>
+            </div></br>
             <div id="dateDiv">
                 <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
                 <label>
@@ -76,22 +73,21 @@
             </div></br>
             <div id="standardParams">
                 <h5>Weitere Einstellungen</h5>
-                <label for="resolution">Auflösung der Data-Cubes in Pixel:</label>
+                <label for="resolution">Auflösung der Data-Cubes in Meter pro Pixel:</label>
                 <select name="resolution" id="resolution">
-                    <option value="res10">10x10</option>
-                    <option value="res20">20x20</option>
-                    <option value="res50">50x50</option>
+                    <option value="res200">200x200</option>
+                    <option value="res400">400x400</option>
+                    <option value="res800">800x800</option>
                 </select></br>
                 <label>Wolkenbedekung:</label>
                 <div class="slidecontainer">
-                    <input type="range" min="1" max="10" value="5" class="slider" id="myRange" oninput="displayAmountSlider(1)">
+                    <input type="range" min="2" max="10" value="5" class="slider" id="myRange" oninput="displayAmountSlider(1)">
                     <input type="text" id="amount" value="" maxlength="5" readonly></p>
                   </div>
             </div>
             <script src="javascripts/inputconfig.js"></script>
             <button type="submit" name="action" class="btn btn-green">Berechnen</button>
         </form>
-        
     </div>
     <!--<div id="spacer"></div>-->
     <div id="mapid" class="col col-lg-5 col-12 border border-dark rounded align-self-lg-end"></div>
@@ -110,16 +106,6 @@
         <p>© 2021 Geosoftware Project </p>
     </div>
 </footer>
-
-<!--deps-->
-<script src="https://unpkg.com/geotiff@1.0.0-beta.7/dist/geotiff.bundle.js"></script>
-<script src="https://unpkg.com/plotty@0.4.4/dist/plotty.min.js"></script>
-
-<!--the plugin-->
-<script src="./javascripts/leaflet-geotiff-2/dist/leaflet-geotiff.js"></script>
-<script src="./javascripts/leaflet-geotiff-2/dist/leaflet-geotiff-plotty.js"></script>
-
-<script src="javascripts/geoTiff.js"></script>
 
 <!-- JQUERY AND BOOTSTRAP JAVASCRIPT-->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
