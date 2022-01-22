@@ -3,6 +3,8 @@ library(plumber)
 
 #* @apiTitle Plumber Example API
 
+pr("plumberapi.R") %>%
+  pr_run(port=8000)
 
 #* Log some information about the incoming request
 #* @filter logger
