@@ -5,3 +5,5 @@ aoa.tif
 di_of_aoa.tif
 lulc-prediction.tif
 lulc-prediction.tif.aux.xml
+.RData
+.Rhistory
