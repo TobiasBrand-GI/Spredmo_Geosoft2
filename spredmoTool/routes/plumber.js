@@ -5,7 +5,7 @@ const axios = require('axios');
 
 router.post('/',function(req, res) {
   if (req.body.modus=="model"){
-    axios.get('http://127.0.0.1:4904/echo?msg=sdf')
+    axios.get('http://127.0.0.1:4280/echo?msg=sdf')
     .then(response => {
       msg=response.data.msg[0]
       console.log(msg)
@@ -15,7 +15,7 @@ router.post('/',function(req, res) {
     })
   }
   else if(req.body.modus=="tdata"){
-    axios.get('http://127.0.0.1:4904/echo?msg=Hello%2Cthis%20is%20the%20mean')
+    axios.get('http://127.0.0.1:4280/echo?msg=Hello%2Cthis%20is%20the%20mean')
     .then(response => {
       msg=response.data.msg[0]
       console.log(msg)
@@ -29,7 +29,7 @@ router.post('/',function(req, res) {
 )
 
 router.get('/results',function(req, res) {
-  axios.get('http://127.0.0.1:4904/echo?msg=Hello%2Cthis%20is%20the%20mean')
+  axios.get('http://127.0.0.1:4280/echo?msg=Hello%2Cthis%20is%20the%20mean')
     .then(response => {
       msg=response.data.msg[0]
       res.send(msg)
@@ -39,4 +39,15 @@ router.get('/results',function(req, res) {
     })
 }
 )
+
+/*router.get('/download',function(req, res) {
+  axios({
+    url: 'http://localhost:3000/public/images/di_of_aoa.tif',
+    method: 'GET',
+    responseType: 'blob', // important
+  }).then((response) => {
+    res.send(response)
+  })
+}
+)*/
 module.exports = router;
