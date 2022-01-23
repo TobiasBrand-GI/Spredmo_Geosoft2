@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const axios = require('axios');
-//var dataAPI = require('./../public/javascripts/download_visualize')
 
 router.post('/',function(req, res) {
   if (req.body.modus=="model"){
@@ -37,7 +36,7 @@ router.get('/results',function(req, res) {
     .catch(error => {
       console.log(error);
     })
-}
+  }
 )
 
 /*router.get('/download',function(req, res) {

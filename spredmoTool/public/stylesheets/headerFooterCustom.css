@@ -25,7 +25,7 @@
 
   #myFooter {
     background-color: #004241;
-    margin:0;
+    margin-right: 0;
     padding:0;
     color:  white;
     width: 100%;
@@ -39,8 +39,8 @@
     background-color: #333333;
     margin:0;
     height: fit-content;
-    position: relative;
-    bottom:0rem;
+    position: absolute;
+    bottom:0;
     width: 100%;
 }
 
@@ -69,11 +69,5 @@
 #myFooter a:focus {
     text-decoration: none;
     color: #0C8054;
-}
-
-#copyrightText p{
-    position: relative;
-    top:45%;
-    min-height: 35px;
 }
 

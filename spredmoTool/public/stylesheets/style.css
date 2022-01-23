@@ -1,27 +1,29 @@
 body {
-  margin: 0;
-  padding:0;
+  position: relative;
+  margin: 0 auto;
+  padding: 0;
   font-size: 28px;
   font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   background-color: #0C8054 !important;
   min-height: 100vh;
 }
-#main{ height: 95vh;}
-
+#main{ 
+  height: 100vh;
+  width: 100%;
+  flex:1;
+}
 #textContent{
   color: rgb(12, 55, 90);
   display: inline-block;
   padding: 10px;
   text-align:center;
 }
-
 #contentFrame{
   position: relative;
   top: 5rem;
-}
-#spacer{
-  height: 6.5rem;
-  width: 100%;
 }
 .btn-green{
   background-color: #004241 !important;
@@ -30,4 +32,8 @@ body {
 
 input[type=text]{
   width: 4rem;
+}
+img {
+  max-width: 100%;
+  max-height: 100%;
 }

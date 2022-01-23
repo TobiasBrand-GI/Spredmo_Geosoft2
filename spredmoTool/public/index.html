@@ -24,7 +24,7 @@
 <body>
 <div id="main" class="container-fluid no-gutters">
     <!--Navbar-->
-    <nav class="navbar navbar-expand-lg navbar-dark  fixed-top p-1">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top p-1">
         <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -41,61 +41,59 @@
         </div>
     </nav>
     <!--Main Content-->
-<div id="contentFrame" class="d-flex justify-content-center flex-wrap align-items-center p-5">
-    <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
-        
-        <h1> Tool zur Berechnung der Area of Applicability</h1>
-        <form action="/plumber/" method="post" role="form">
-            <div class="text-left">
-                <input type="radio" id="radioModel" name="modelInput" value="model" checked onclick="changeInputHTML('model',1)"/>
-                <label for="radioModel">Bereits trainiertes Modell</label></br>
-                <input type="radio" id="radioTrain" name="modelInput" value="train" onclick="changeInputHTML('data',1)"/>
-                <label for="radioTrain">Trainingsdaten für ein neues Modell</label>
-            </div>
-            <div id="modelInDiv" class="form-group"></div></br>
-            <div id="aoiJSON">
-                <h5>Wählen Sie die gewünschte Area of Interest auf der Karte oder fügen Sie einen Geo-JSON Code ein</h5>
-                <div class="input-group">
-                    <input type="text" class="form-control form-control-md" id="geoJSONInput" placeholder="JSON-Code"/>
-                    <input type="button" class="btn btn-green input-group-append" value="Zur Karte hintzufügen" onclick="addJSONtoMap()"></input>
+    <div id="contentFrame" class="d-flex justify-content-center flex-wrap align-items-center p-5">
+        <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
+            <h1> Tool zur Berechnung der Area of Applicability</h1>
+            <form action="/plumber/" method="post" role="form">
+                <div class="text-left">
+                    <input type="radio" id="radioModel" name="modelInput" value="model" checked onclick="changeInputHTML('model',1)"/>
+                    <label for="radioModel">Bereits trainiertes Modell</label></br>
+                    <input type="radio" id="radioTrain" name="modelInput" value="train" onclick="changeInputHTML('data',1)"/>
+                    <label for="radioTrain">Trainingsdaten für ein neues Modell</label>
                 </div>
-            </div></br>
-            <div id="dateDiv">
-                <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
-                <label>
-                    von:
-                    <input type="date" name="startDay">
-                </label>
-                <label>
-                    bis:
-                    <input type="date" name="endDay">
-                </label> 
-            </div></br>
-            <div id="standardParams">
-                <h5>Weitere Einstellungen</h5>
-                <label for="resolution">Auflösung der Data-Cubes in Meter pro Pixel:</label>
-                <select name="resolution" id="resolution">
-                    <option value="res200">200x200</option>
-                    <option value="res400">400x400</option>
-                    <option value="res800">800x800</option>
-                </select></br>
-                <label>Wolkenbedekung:</label>
-                <div class="slidecontainer">
-                    <input type="range" min="2" max="10" value="5" class="slider" id="myRange" oninput="displayAmountSlider(1)">
-                    <input type="text" id="amount" value="" maxlength="5" readonly></p>
-                  </div>
-            </div>
-            <script src="javascripts/inputconfig.js"></script>
-            <button type="submit" name="action" class="btn btn-green">Berechnen</button>
-        </form>
+                <div id="modelInDiv" class="form-group"></div></br>
+                <div id="aoiJSON">
+                    <h5>Wählen Sie die gewünschte Area of Interest auf der Karte oder fügen Sie einen Geo-JSON Code ein</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-md" id="geoJSONInput" placeholder="JSON-Code"/>
+                        <input type="button" class="btn btn-green input-group-append" value="Zur Karte hintzufügen" onclick="addJSONtoMap()"></input>
+                    </div>
+                </div></br>
+                <div id="dateDiv">
+                    <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
+                    <label>
+                        von:
+                        <input type="date" name="startDay">
+                    </label>
+                    <label>
+                        bis:
+                        <input type="date" name="endDay">
+                    </label> 
+                </div></br>
+                <div id="standardParams">
+                    <h5>Weitere Einstellungen</h5>
+                    <label for="resolution">Auflösung der Data-Cubes in Meter pro Pixel:</label>
+                    <select name="resolution" id="resolution">
+                        <option value="res200">200x200</option>
+                        <option value="res400">400x400</option>
+                        <option value="res800">800x800</option>
+                    </select></br>
+                    <label>Wolkenbedekung:</label>
+                    <div class="slidecontainer">
+                        <input type="range" min="2" max="10" value="5" class="slider" id="myRange" oninput="displayAmountSlider(1)">
+                        <input type="text" id="amount" value="" maxlength="5" readonly></p>
+                    </div>
+                </div>
+                <script src="javascripts/inputconfig.js"></script>
+                <button type="submit" name="action" class="btn btn-green">Berechnen</button>
+            </form>
+        </div>
+        <div id="mapid" class="col col-lg-5 col-12 border border-dark rounded align-self-lg-start"></div>
+        <script src="javascripts/indexSiteMap.js"></script>
     </div>
-    <!--<div id="spacer"></div>-->
-    <div id="mapid" class="col col-lg-5 col-12 border border-dark rounded align-self-lg-end"></div>
-    <script src="javascripts/indexSiteMap.js"></script>
-</div>
 </div>
 <!-- FOOTER-->
-<footer id="myFooter" class="row col col-12 d-flex flex-column align-items-left">
+<footer id="myFooter" class="row col col-12 d-flex flex-wrap mt-5 mt-md-3 mt-lg-2">
     <div class="row col col-12 d-flex flex-column ">
         <p><b>Links</b><br>
             <a href="https://www.uni-muenster.de/de/">University</a><br>
@@ -103,7 +101,7 @@
         </p>
     </div>
     <div id="copyrightText" class="footer-copyright">
-        <p>© 2021 Geosoftware Project </p>
+        <p>© 2022 Geosoftware Project </p>
     </div>
 </footer>
 
