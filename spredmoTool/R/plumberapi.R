@@ -1,12 +1,6 @@
 library(plumber)
 
-
-#plumb("plumberapi.R") %>%
-#  pr_run(port=8000)
-
-#* @apiTitle Plumber Example API
-
-
+#* @apiTitle Plumber Spredmo API
 
 #* Log some information about the incoming request
 #* @filter logger
@@ -19,11 +13,12 @@ function(req) {
   forward()
 }
 
+
 #* @filter cors
 cors <- function(req, res) {
-  
+
   res$setHeader("Access-Control-Allow-Origin", "*")
-  
+
   if (req$REQUEST_METHOD == "OPTIONS") {
     res$setHeader("Access-Control-Allow-Methods","*")
     res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
@@ -34,34 +29,9 @@ cors <- function(req, res) {
   }
 }
 
-
-#* post Endpunkt der AOA berrechnung MIT Model 
-#* @post /aoamm
-#* @preempt cors
-function(model, AOI, cloudcover) {
-  
-}
-
-#* post Endpunkt der AOA berrechnung OHNE Model
-#* @post /aoaom
-#* @preempt cors
-function(trainData, AOI, cloudcover) {
-  
-}
-
-#* get Endpunkt für die results
-#* @param prediction
-#* @param AOA
-#* @param samplePoints
-#* @get /results
-#* @preempt cors
-function(prediction, AOA, samplePoints) {
-  
-}
-
 #* Echo back the input
 #* @param msg The message to echo
-#* @get /echo
+#* @get /results
 #* @preempt cors
 function(msg = "") {
   list(
@@ -70,3 +40,19 @@ function(msg = "") {
   )
 }
 
+
+#* Endpunkt der aoa script startet MIT model
+#* @post /aoamodel
+#* @preempt cors
+function(req, res) {
+  list(paste0(req$body))
+}
+
+
+
+#* Endpunkt der aoa script startet OHNE model
+#* @post /aoatdata
+#* @preempt cors
+function(req, res) {
+  list(paste0(req$body))
+}
