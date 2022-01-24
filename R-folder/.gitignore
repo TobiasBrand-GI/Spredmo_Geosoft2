@@ -1,9 +1,11 @@
-output_2018-06-01.tif
-output_2018-06-01_temp.tif
-output_2018-06-01.tif.aux.xml
+output_*.tif
+output_*.xml
 aoa.tif
 di_of_aoa.tif
 lulc-prediction.tif
 lulc-prediction.tif.aux.xml
+satelite_for_trainingSites_*.tif
+satelite_for_trainingSites_*.xml
 .RData
 .Rhistory
+
