@@ -1,28 +1,16 @@
 library(jsonlite)
-
-#box area of interest
-##AOI Koordinaten aus leaflet karte müssen hier rein
-x_coord2 <- c(810000.0,  810000.0,  830000.0, 830000.0, 810000.0)
-y_coord2 <- c(5760000.0, 5770000.0, 5770000.0, 5760000.0, 5760000.0)
-sps2 <- cbind(x_coord2, y_coord2)
-
-###zum polygon umwandeln
-pols <- spPolygons(sps2)
-
-
-## anscheinend unnötig
-#st_crs(pols)
-#Boundingbox_shape_32631 <- st_transform(pols, crs="EPSG:32631")     #  "EPSG:4236")
-
-
+##**
+##plumber funktion
+calculate_random_points <- function(Areaofinterest, AOA) {
+##**
 
 
 ##
-plot(AOA$AOA)
+#plot(AOA$AOA)
 ##AoA raster to polygon
 AOA_Polygon <-rasterToPolygons(AOA$AOA, fun=NULL, n=4, na.rm=TRUE, digits=12, dissolve=FALSE)
 ##AOA von AOI abziehen
-clipped <-pols-AOA_Polygon
+clipped <-Areaofinterest-AOA_Polygon
 ##Polygon mt area of Interest, kann weggelassen werden
 plot(clipped, add=T)
 ## Punkte in rest generieren
@@ -30,7 +18,7 @@ pts <- spsample(clipped, 10, type = 'random')
 ##Punkte plotten
 plot(pts, add = T, col = 'red')
 
-#Gucken ob man die punkte mit koordinaten bekommt
+
 #utm zu lat lon umwandeln
 utm1 <- data.frame(x=pts$x,y=pts$y) 
 coordinates(utm1) <- ~x+y
@@ -47,13 +35,28 @@ Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
 
 Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
 
-Samplepoint_coordinates_as_Json
+return(Samplepoint_coordinates_as_Json)
+}
 
 
+
+#box area of interest
+##AOI Koordinaten aus leaflet karte müssen hier rein
+x_coord2 <- c(810000.0,  810000.0,  830000.0, 830000.0, 810000.0)
+y_coord2 <- c(5760000.0, 5770000.0, 5770000.0, 5760000.0, 5760000.0)
+sps2 <- cbind(x_coord2, y_coord2)
+
+###zum polygon umwandeln
+polygon <- spPolygons(sps2)
+##**
+##plumber funktion
+calculate_random_points(polygon, AOA)
+message("DONE: calculate_random_points()")
+##**
 
 #write json
 
-write(Samplepoint_coordinates_as_Json, "output.json")
+#write(Samplepoint_coordinates_as_Json, "output.json")
 
 
 
