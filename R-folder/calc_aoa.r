@@ -211,6 +211,8 @@ message("DONE: load Referencedata as RDS")
 unique(trainDat$Region)
 message("DONE: delete redudant data")
 
+# identical(names(sen:ms),names(trainDat...????....))
+
 
 #####
 ### prepair training parameters
