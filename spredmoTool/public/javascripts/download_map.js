@@ -32,3 +32,15 @@ function loadTIFF(url){
     });
   });
 }
+
+function createMeassurePoints(){
+  let coords = new Array([822399.4412, 5760307.401],
+    [829916.1348, 5767012.1095],
+    [810172.2735, 5769327.9523],
+    [829477.9401, 5766041.1987],
+    [827689.3864, 5762172.2735])
+  for(i=0; i<coords.length;i++){
+    var marker = L.marker([coords[i][0], [i][1]]).addTo(map);
+  }
+}
+createMeassurePoints();
