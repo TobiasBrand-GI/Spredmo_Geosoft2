@@ -71,7 +71,7 @@ items = s %>%
                        bbox_wgs84["xmax"],bbox_wgs84["ymax"]),
               datetime = "2018-06-01/2018-06-30",
               limit = 500) %>%
-  post_request() 
+  post_request()
 # items
 message("DONE: stac_search()")
 
@@ -107,7 +107,7 @@ message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
-cube_view_input_shape <- cube_view(srs = targetString,   # "EPSG:4326",
+cube_view_for_data_cube <- cube_view(srs = targetString,   # "EPSG:4326",
                                    dx = 20, #20,
                                    dy = 20, #20,
                                    dt = "P30D",
@@ -130,7 +130,7 @@ message("DONE: image_mask()")
 
 
 #####
-### set threads / logische Prozessoren 
+### set threads / logische Prozessoren
 library(magrittr)
 gdalcubes_options(threads = 16)
 message("DONE: set threads")
@@ -143,7 +143,7 @@ message("DO NOT WORRY :)")
 if (!is.null(input_sites$geometry)){
   temp <- input_sites$geometry
 } else  temp <- input_sites$geom
-satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
+satelite_cube <- raster_cube(s2_collection, cube_view_for_data_cube, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
   # NDVI - Normalized Difference Vegetation Index
@@ -172,6 +172,11 @@ write_tif(satelite_cube,
           write_json_descr = FALSE,
           pack = NULL)
 message("DONE: save as geoTiff")
+
+
+#####################################################################
+### calculations with/for model:
+#####################################################################
 
 
 #####
@@ -230,7 +235,7 @@ model <- train(trainDat[,predictors],
                metric="Kappa",
                trControl=ctrl_default,
                importance=TRUE,
-               ntree=50)
+               ntree=500) # ab 500 wird das Ergebnis nicht mehr besser
 model
 message("DONE: train model")
 
