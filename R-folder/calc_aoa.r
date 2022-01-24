@@ -36,25 +36,29 @@ input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geo
 st_crs(input_shape)
 plot(input_shape)
 input_shape_transformed <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
-# st_crs(input_shape_32632)
+# st_crs(input_shape_transformed)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
 
 #####
 ### visualisation in RStudio
-# plot(input_shape_32632)
+# plot(input_shape_transformed)
 # library(mapview)
-# mapview(input_shape_32632)
+# mapview(input_shape_transformed)
 
 
 #####
 ### prepair bbox
-bbox <- st_bbox(input_shape_transformed)
-st_as_sfc(bbox) %>%
-  st_transform("EPSG:4326") %>%
-  st_bbox() -> bbox_wgs84
-#bbox_wgs84
-message("DONE: st_as_sfc() for bbox")
+calculate_bbox <- function(input_sites) {
+    bbox <- st_bbox(input_sites)
+    st_as_sfc(bbox) %>%
+    st_transform("EPSG:4326") %>%
+    st_bbox() -> bbox_wgs84
+    return(bbox_wgs84)
+    #bbox_wgs84
+}
+calculate_bbox(input_shape_transformed)
+message("DONE: calculate_bbox()")
 
 
 #####
@@ -83,7 +87,7 @@ message("DONE: stac_search()")
 ### get right crs
 targetSystem <- toString(items$features[[1]]$properties$`proj:epsg`)
 targetString <- paste('EPSG:',targetSystem)
-input_shape_transformed <- st_transform(input_shape, crs=targetString)     #  "EPSG:4236")
+input_sites <- st_transform(input_shape, crs=targetString)
 message("DONE: get right crs")
 
 
@@ -136,9 +140,9 @@ message("DONE: set threads")
 ### make raster cube
 library(dplyr) # needed for '%>%'
 message("DO NOT WORRY :)")
-if (!is.null(input_shape_transformed$geometry)){
-  temp <- input_shape_transformed$geometry
-} else  temp <- input_shape_transformed$geom
+if (!is.null(input_sites$geometry)){
+  temp <- input_sites$geometry
+} else  temp <- input_sites$geom
 satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
@@ -148,7 +152,7 @@ satelite_cube <- raster_cube(s2_collection, cube_view_input_shape, s2_mask) %>%
   #  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
   # Built-up Area Extraction Index
   #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
-  filter_geom(temp)
+  filter_geom(temp, srs = targetString)
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
 message("DONE: raster_cube()")
