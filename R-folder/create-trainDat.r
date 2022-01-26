@@ -68,19 +68,26 @@ create_filtered_image_collection <- function(input_items, intpu_cloud_coverage) 
 
 #####
 ### generate data cube
-generate_cube_view <- function(input_epsg_string, in_dx, in_dy, in_t0, in_t1, in_bbox) {
+generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in_bbox) {
     cube_view_for_data_cube <- cube_view(srs = input_epsg_string,
-                                        #dx = in_dx, # 200, #20,
-                                        #dy = in_dy, # 200, #20,
-                                        dt = "P30D",
-                                        aggregation = "median",
-                                        resampling = "average",
-                                        extent = list(t0 = in_t0,
+                                         dt="P1M", 
+                                         nx=100, 
+                                         ny=100, 
+                                         aggregation = "mean", 
+                                         resampling="near",
+                                         # nx = in_nx, # 200, #20,
+                                           # keep.asp = TRUE, # derives ny
+                                         # ny = in_ny, # 200, #20,
+                                         # dt =  "P1M", #"P30D",
+                                         # aggregation = "median",
+                                         # resampling = "average",
+                                         # extent = extent(in_image_collection))
+                                         extent = list(t0 = in_t0,
                                                     t1 = in_t1,
-                                                    left = in_bbox[1]-1000, # xmin
-                                                    right = in_bbox[2]+1000, # ymin
-                                                    top = in_bbox[3] + 1000, # xmax
-                                                    bottom = in_bbox[4]-1000)) # ymax
+                                                    left = in_bbox[1]-100, # xmin
+                                                    right = in_bbox[2]+100, # ymin
+                                                    top = in_bbox[3]+100, # xmax
+                                                    bottom = in_bbox[4]-100)) # ymax
     message("DONE: cube_view()")
     return(cube_view_for_data_cube)
 }
@@ -116,9 +123,9 @@ generate_raster_cube <- function(input_area, input_collection, input_cube_view, 
     if (!is.null(input_area$geometry)){
         temp <- input_area$geometry
     } else  temp <- input_area$geom
-    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) 
+    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) %>%
     # print(satelite_cube)
-    # filter_geom(temp, srs = input_epsg)
+      filter_geom(temp, srs = input_epsg)
     message("DONE: raster_cube()")
     return(satelite_cube)
 }
@@ -176,10 +183,10 @@ combine_sentinel_with_trainingSites <- function(input_trainingSites, predictors_
 #####
 ### parameters from plumber APIs:
 # trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/testdata.geojson")
-resolution_x <- 200
-resolution_y <- 200
-start_day <- "2021-04-01"
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_training_polygons.geojson")
+resolution_x <- 20
+resolution_y <- 500
+start_day <- "2021-03-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 80
 path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
@@ -195,14 +202,23 @@ set_threads()
 #####
 ### function calls in case of no model
 fitting_epsg_as_string <- find_right_crs(trainingSites)
+fitting_epsg_as_string
 bbox_wgs84 <- calculate_bbox(trainingSites, fitting_epsg_as_string)
+bbox_wgs84
 sentinelDat <- get_sentinelDat_form_stac(bbox_wgs84, start_day, end_day)
+sentinelDat
 trainingSites <- st_transform(trainingSites, crs=fitting_epsg_as_string)
+trainingSites
 image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_coverage)
+image_collection_for_trainingSites
 cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, resolution_y, start_day, end_day, bbox_wgs84)
+cube_view_for_trainingSites
 cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
+cube_for_trainingSites
+# save as geotif
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
-
+# combine satelite with classified polygones
 predictors_stack <- load_predictors_and_rename_bands()
 trainingDat <- combine_sentinel_with_trainingSites(trainingSites, predictors_stack) # can't test this
+
