@@ -32,10 +32,10 @@ message("start processing")
 ### load shape as gpkg and transform crs
 warning("!!! check path !!!")
 # input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
-input_shape <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg')
+input_shape <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
 st_crs(input_shape)
 plot(input_shape)
-input_shape_transformed <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
+# input_shape_transformed <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
 # st_crs(input_shape_transformed)
 message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
@@ -49,15 +49,15 @@ message("DONE: st_transform() for '<input_shape>.gpkg' ")
 
 #####
 ### prepair bbox
-calculate_bbox <- function(input_sites) {
-    bbox <- st_bbox(input_sites)
-    st_as_sfc(bbox) %>%
-    st_transform("EPSG:4326") %>%
-    st_bbox() -> bbox_wgs84
-    return(bbox_wgs84)
-    #bbox_wgs84
-}
-calculate_bbox(input_shape_transformed)
+# calculate_bbox <- function(input_sites) {
+bbox <- st_bbox(input_shape_transformed)
+st_as_sfc(bbox) %>%
+st_transform("EPSG:4326") %>%
+st_bbox() -> bbox_wgs84
+# return(bbox_wgs84)
+# bbox_wgs84
+
+#bbox_wgs84 <- calculate_bbox(input_shape_transformed)
 message("DONE: calculate_bbox()")
 
 
@@ -107,7 +107,7 @@ message("DONE: stac_image_collection()")
 
 #####
 ### generate data cube
-cube_view_for_data_cube <- cube_view(srs = targetString,   # "EPSG:4326",
+cube_view_for_data_cube <- cube_view(srs="EPSG:4326", # srs = targetString,   # "EPSG:4326",
                                    dx = 20, #20,
                                    dy = 20, #20,
                                    dt = "P30D",
@@ -115,10 +115,10 @@ cube_view_for_data_cube <- cube_view(srs = targetString,   # "EPSG:4326",
                                    resampling = "average",
                                    extent = list(t0 = "2018-06-01",
                                                  t1 = "2018-06-30",
-                                                 left = bbox["xmin"]-1000, 
-                                                 right = bbox["xmax"]+1000,
-                                                 top = bbox["ymax"] + 1000, 
-                                                 bottom = bbox["ymin"]-1000))
+                                                 left = bbox[1]-1000, 
+                                                 right = bbox[2]+1000,
+                                                 top = bbox[3] + 1000, 
+                                                 bottom = bbox[4]-1000))
 # cube_view_input_shape
 message("DONE: cube_view()")
 
@@ -152,7 +152,7 @@ satelite_cube <- raster_cube(s2_collection, cube_view_for_data_cube, s2_mask) %>
   #  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
   # Built-up Area Extraction Index
   #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
-  filter_geom(temp, srs = targetString)
+  filter_geom(temp, srs = "EPSG:4326")#targetString)
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
 message("DONE: raster_cube()")
