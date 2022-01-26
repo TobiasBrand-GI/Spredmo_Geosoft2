@@ -4,7 +4,7 @@ library(raster)
 library(sf)
 library(rstac)
 library(gdalcubes)
-library(rjson)
+# library(rjson)
 
 
 
@@ -56,12 +56,11 @@ test_with_trainingSites(trainingSites, resolution_x, resolution_y, start_day, en
 
 #####
 ### outputs for plumber
-aoa <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_aoa.tif")
-# wird der DI gebraucht?
-# di_of_aoa <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_di_of_aoa.tif")
-lulc_prediction <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_lulc_prediction.tif")
-# folgendes funktioniert nicht - warum, das weiß ich nicht:
-# sample_points <- fromJSON("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_sample_points.json")
+aoa_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_aoa.tif" # load with stack()
+di_of_aoa_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_di_of_aoa.tif" # load with stack()
+lulc_prediction_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_lulc_prediction.tif" # load with stack()
+sample_points_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_sample_points.json" # load with fromJSON()
+
 
 
 
