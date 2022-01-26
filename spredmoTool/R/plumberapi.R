@@ -1,5 +1,5 @@
 library(plumber)
-
+library(rjson)
 #* @apiTitle Plumber Spredmo API
 
 #* Log some information about the incoming request
@@ -30,13 +30,18 @@ cors <- function(req, res) {
 }
 
 #* Echo back the input
-#* @param msg The message to echo
 #* @get /results
 #* @preempt cors
-function(msg = "") {
+function() {
+  #sample_points <- fromJSON(file = "testdata/result_sample_points.json")
   list(
-    msg = paste0(
-      "The message is: '", msg , "'")
+    
+    aoa_tif = "path/aoa_tif",
+    prediction_tif = "path/prediction_tif",
+    sample_points = "path/samplepoints",
+    model = "path/model"
+    
+    
   )
 }
 

@@ -4,6 +4,7 @@ const axios = require('axios');
 //var dataAPI = require('./../public/javascripts/download_visualize')
 
 router.post('/',function(req, res) {
+  /*
   if (req.body.modus=="model"){
     axios.get('http://127.0.0.1:4280/echo?msg=sdf')
     .then(response => {
@@ -24,15 +25,17 @@ router.post('/',function(req, res) {
       console.log(error);
     })
   }
+  */
   res.redirect("/download.html")
 }
 )
 
+
 router.get('/results',function(req, res) {
-  axios.get('http://127.0.0.1:4280/echo?msg=Hello%2Cthis%20is%20the%20mean')
+  axios.get('http://127.0.0.1:8214/results')
     .then(response => {
-      msg=response.data.msg[0]
-      res.send(msg)
+      console.log(response.data)
+      res.send(response.data)
     })
     .catch(error => {
       console.log(error);
