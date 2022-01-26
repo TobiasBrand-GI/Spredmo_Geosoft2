@@ -1,6 +1,6 @@
 function getRResults() {
-    return $.ajax({
-        url: "/plumber/results",
+        $.ajax({
+        url: "/plumber/geotiff",
         method: "GET",
         })
 }
@@ -9,13 +9,11 @@ async function visualize_Results(){
     try{
         const res = await getRResults();
         console.log(res)
-        setTimeout(()=> {
-            document.getElementById("loading").style.display="none";
-            document.getElementById("mapid").style.display="block";
-            document.getElementById("dwButton").disabled=false;
-            dmap.invalidateSize();
-            loadTIFF("../images/di_of_aoa (2).tif");
-        }, 2000)
+        document.getElementById("loading").style.display="none";
+        document.getElementById("mapid").style.display="block";
+        document.getElementById("dwButton").disabled=false;
+        dmap.invalidateSize();
+        loadTIFF("images/test.tif");
     }catch(err){
         console.log(err)
     }

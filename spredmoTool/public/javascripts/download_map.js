@@ -8,10 +8,10 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 }).addTo(dmap);
 
 function loadTIFF(url){
-  var url_to_geotiff_file =url;
-  fetch(url_to_geotiff_file)
-    .then(response => response.arrayBuffer())
-    .then(arrayBuffer => {
+      var url_to_geotiff_file =url;
+      fetch(url_to_geotiff_file)
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
       parseGeoraster(arrayBuffer).then(georaster => {
         console.log("georaster:", georaster);
         var scale = chroma.scale(['white','brown', 'orange', 'red', 'blue', 'green', 'pink', 'black', 'purple', 'yellow']).domain([0,1,2,3,4,5,6,7,8,9]);
@@ -29,18 +29,18 @@ function loadTIFF(url){
         console.log(georaster)
         layer.addTo(dmap);
         dmap.fitBounds(layer.getBounds());
+      });
     });
-  });
 }
 
 function createMeassurePoints(){
-  let coords = new Array([822399.4412, 5760307.401],
-    [829916.1348, 5767012.1095],
-    [810172.2735, 5769327.9523],
-    [829477.9401, 5766041.1987],
-    [827689.3864, 5762172.2735])
+  let coords = new Array([51.9434, 7.7049],
+    [51.989, 7.5314],
+    [51.9103, 7.7915],
+    [51.9253, 7.7641],
+    [51.9381, 7.776])
   for(i=0; i<coords.length;i++){
-    var marker = L.marker([coords[i][0], [i][1]]).addTo(map);
+    var marker = L.marker([coords[i][0], coords[i][1]]).addTo(dmap);
   }
 }
 createMeassurePoints();
