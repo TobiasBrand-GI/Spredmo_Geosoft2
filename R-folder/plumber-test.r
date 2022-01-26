@@ -60,7 +60,7 @@ aoa_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/res
 di_of_aoa_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_di_of_aoa.tif" # load with stack()
 lulc_prediction_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_lulc_prediction.tif" # load with stack()
 sample_points_path <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_sample_points.json" # load with fromJSON()
-
+trained_model_path <- "<path_string>"
 
 
 
