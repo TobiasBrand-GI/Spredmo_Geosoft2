@@ -54,7 +54,7 @@ test_with_trainingSites(trainingSites, resolution_x, resolution_y, start_day, en
 
 #####
 ### outputs for plumber
-aoa <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_aoa.tif")
+aoa <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_output11.tif")
 # wird der DI gebraucht?
 # di_of_aoa <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_di_of_aoa.tif")
 lulc_prediction <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/result_di_of_aoa.tif") #  result_lulc_prediction.tif")
