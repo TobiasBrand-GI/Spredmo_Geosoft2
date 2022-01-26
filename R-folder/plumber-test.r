@@ -49,7 +49,7 @@ path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_G
 #####
 ### function calls
 # if(case == trained_model)
-test_with_trained_model(trainingSites, resolution_x, resolution_y, start_day, end_day, cloud_coverage)
+test_with_trained_model(model, resolution_x, resolution_y, start_day, end_day, cloud_coverage)
 # if(case == trainingSites)
 test_with_trainingSites(trainingSites, resolution_x, resolution_y, start_day, end_day, cloud_coverage, path_for_satelite_for_trainingSites)
 
