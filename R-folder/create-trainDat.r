@@ -75,7 +75,7 @@ generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in
                                          #ny = in_ny, #250, 
                                          aggregation = "mean", 
                                          resampling="near",
-                                         keep.asp = TRUE, # derives ny
+                                         keep.asp = TRUE, # derives ny from nx and bbox
                                          # extent = extent(in_image_collection))
                                          extent = list(t0 = in_t0,
                                                     t1 = in_t1,
@@ -162,7 +162,7 @@ load_predictors_and_rename_bands <- function() {
 
 #####
 ### Daten kombinieren
-combine_sentinel_with_trainingSites <- function(input_trainingSites, input_predictors_stack) {
+combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_trainingSites) {
     extr <- extract(input_predictors_stack, input_trainingSites, df=TRUE) # extract is from raster-package
     head(extr)
     input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
@@ -216,5 +216,5 @@ plot(cube_for_trainingSites, zlim=c(0, 1800))
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
 # combine satelite with classified polygones
 predictors_stack <- load_predictors_and_rename_bands()
-trainingDat <- combine_sentinel_with_trainingSites(trainingSites, predictors_stack) # can't test this
+trainingDat <- combine_sentinel_with_trainingSites(predictors_stack, trainingSites) # can't test this
 
