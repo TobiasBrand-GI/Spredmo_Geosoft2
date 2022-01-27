@@ -75,12 +75,7 @@ generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in
                                          #ny = in_ny, #250, 
                                          aggregation = "mean", 
                                          resampling="near",
-                                         # nx = in_nx, # 200, #20,
                                          keep.asp = TRUE, # derives ny
-                                         # ny = in_ny, # 200, #20,
-                                         # dt =  "P1M", #"P30D",
-                                         # aggregation = "median",
-                                         # resampling = "average",
                                          # extent = extent(in_image_collection))
                                          extent = list(t0 = in_t0,
                                                     t1 = in_t1,
@@ -167,8 +162,8 @@ load_predictors_and_rename_bands <- function() {
 
 #####
 ### Daten kombinieren
-combine_sentinel_with_trainingSites <- function(input_trainingSites, predictors_stack) {
-    extr <- extract(predictors_stack, input_trainingSites, df=TRUE) # extract is from raster-package
+combine_sentinel_with_trainingSites <- function(input_trainingSites, input_predictors_stack) {
+    extr <- extract(input_predictors_stack, input_trainingSites, df=TRUE) # extract is from raster-package
     head(extr)
     input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
     extr <- merge(extr,input_trainingSites,by.x="ID",by.y="ClassID")
@@ -181,9 +176,9 @@ combine_sentinel_with_trainingSites <- function(input_trainingSites, predictors_
 ### parameters from plumber APIs:
 # trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
 #trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/
-trainingSites <- read_sf("C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/input_test_mit_thomas_1.gpkg")   #test_training_polygons.geojson")
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
 resolution_x <- 300
-resolution_y <- "auto"
+# resolution_y <- "auto"
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 80
@@ -216,7 +211,7 @@ cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolu
 cube_view_for_trainingSites
 cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
 # cube_for_trainingSites
-# plot(cube_for_trainingSites)
+plot(cube_for_trainingSites, zlim=c(0, 1800))
 # save as geotif
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
 # combine satelite with classified polygones
