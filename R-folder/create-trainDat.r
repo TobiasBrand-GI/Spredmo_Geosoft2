@@ -3,7 +3,7 @@ library(raster)
 library(sf)
 library(rstac)
 library(gdalcubes)
-
+library(sp)
 
 # sentinel <- stack("predictors/predictors_muenster.grd")
 #Falls nicht im gleichen crs, dann projizieren!!
@@ -71,8 +71,8 @@ create_filtered_image_collection <- function(input_items, intpu_cloud_coverage) 
 generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in_bbox) {
     cube_view_for_data_cube <- cube_view(srs = input_epsg_string,
                                          dt="P1M", 
-                                         nx=100, 
-                                         ny=100, 
+                                         nx=50, 
+                                         ny=50, 
                                          aggregation = "mean", 
                                          resampling="near",
                                          # nx = in_nx, # 200, #20,
@@ -84,10 +84,10 @@ generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in
                                          # extent = extent(in_image_collection))
                                          extent = list(t0 = in_t0,
                                                     t1 = in_t1,
-                                                    left = in_bbox[1]-100, # xmin
-                                                    right = in_bbox[2]+100, # ymin
-                                                    top = in_bbox[3]+100, # xmax
-                                                    bottom = in_bbox[4]-100)) # ymax
+                                                    left = in_bbox[1]-7, # xmin
+                                                    right = in_bbox[3]+10, # xmax 
+                                                    top = in_bbox[4]+10, # ymin
+                                                    bottom = in_bbox[2]-10)) # ymax
     message("DONE: cube_view()")
     return(cube_view_for_data_cube)
 }
@@ -123,9 +123,9 @@ generate_raster_cube <- function(input_area, input_collection, input_cube_view, 
     if (!is.null(input_area$geometry)){
         temp <- input_area$geometry
     } else  temp <- input_area$geom
-    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) %>%
+    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) #%>%
     # print(satelite_cube)
-      filter_geom(temp, srs = input_epsg)
+      filter_geom(satelite_cube, temp, srs = input_epsg)
     message("DONE: raster_cube()")
     return(satelite_cube)
 }
@@ -186,7 +186,7 @@ combine_sentinel_with_trainingSites <- function(input_trainingSites, predictors_
 trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_training_polygons.geojson")
 resolution_x <- 20
 resolution_y <- 500
-start_day <- "2021-03-01"
+start_day <- "2021-04-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 80
 path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
@@ -215,6 +215,7 @@ cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolu
 cube_view_for_trainingSites
 cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
 cube_for_trainingSites
+plot(cube_for_trainingSites)
 # save as geotif
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
