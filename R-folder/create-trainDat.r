@@ -153,7 +153,7 @@ load_predictors_and_rename_bands <- function() {
     sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
     # rename bands
     names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    # plot(sen_ms)
+    names(sentinel)
     plotRGB(sentinel,stretch="lin",r=3,g=2,b=1)
     message("DONE: load as RasterStack")
     return(sentinel)
@@ -165,15 +165,19 @@ load_predictors_and_rename_bands <- function() {
 combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_trainingSites) {
     spatVector <- terra::vect(input_trainingSites)
     spatRaster <- terra::rast(input_predictors_stack, subds=0, opts=NULL)
+    message("DONE: transform to SpatRaster and SpatVector")
+    
     extr <- terra::extract(spatRaster, spatVector)     # function signatur like in terra-package
     # extr <- raster::extract(spatRaster, spatVector, df=TRUE) # extract from raster works only with spatRaster and spatVector
     # rename bands
     names(extr) <- c("ID","B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
     head(extr)
     input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
-    extr <- merge(extr,input_trainingSites,by.x="ID",by.y="ClassID")
+    extr <- merge(input_trainingSites, extr)   #,by.x="ID",by.y="ClassID")
     head(extr)
-    saveRDS(extr,file="trainingsites/trainData.RDS")
+    message("DONE: merge vector and raster")
+    saveRDS(extr,file="trainData.RDS")
+    message("DONE: save RDS")
 }
 
 
@@ -209,14 +213,14 @@ bbox_wgs84 <- calculate_bbox(trainingSites, fitting_epsg_as_string)
 sentinelDat <- get_sentinelDat_form_stac(bbox_wgs84, start_day, end_day)
 # sentinelDat
 trainingSites <- st_transform(trainingSites, crs=fitting_epsg_as_string)
-trainingSites
+# trainingSites
 image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_coverage)
 # image_collection_for_trainingSites
 cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, bbox_wgs84)
 cube_view_for_trainingSites
 cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
-# cube_for_trainingSites
-plot(cube_for_trainingSites, zlim=c(0, 1800))
+cube_for_trainingSites
+# plot(cube_for_trainingSites, zlim=c(0, 1800))
 # save as geotif
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
 # combine satelite with classified polygones
