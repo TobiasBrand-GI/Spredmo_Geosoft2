@@ -4,6 +4,7 @@ library(sf)
 library(rstac)
 library(gdalcubes)
 library(sp)
+library(terra)
 
 # sentinel <- stack("predictors/predictors_muenster.grd")
 #Falls nicht im gleichen crs, dann projizieren!!
@@ -68,7 +69,7 @@ create_filtered_image_collection <- function(input_items, intpu_cloud_coverage) 
 
 #####
 ### generate data cube
-generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in_bbox) {
+generate_cube_view <- function(input_epsg_string, in_nx, in_t0, in_t1, in_bbox) {
     cube_view_for_data_cube <- cube_view(srs = input_epsg_string,
                                          dt="P1M", 
                                          nx = in_nx, #250, 
@@ -76,7 +77,6 @@ generate_cube_view <- function(input_epsg_string, in_nx, in_ny, in_t0, in_t1, in
                                          aggregation = "mean", 
                                          resampling="near",
                                          keep.asp = TRUE, # derives ny from nx and bbox
-                                         # extent = extent(in_image_collection))
                                          extent = list(t0 = in_t0,
                                                     t1 = in_t1,
                                                     left = in_bbox[1]-0.1, # xmin
@@ -163,7 +163,12 @@ load_predictors_and_rename_bands <- function() {
 #####
 ### Daten kombinieren
 combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_trainingSites) {
-    extr <- extract(input_predictors_stack, input_trainingSites, df=TRUE) # extract is from raster-package
+    spatVector <- terra::vect(input_trainingSites)
+    spatRaster <- terra::rast(input_predictors_stack, subds=0, opts=NULL)
+    extr <- terra::extract(spatRaster, spatVector)     # function signatur like in terra-package
+    # extr <- raster::extract(spatRaster, spatVector, df=TRUE) # extract from raster works only with spatRaster and spatVector
+    # rename bands
+    names(extr) <- c("ID","B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
     head(extr)
     input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
     extr <- merge(extr,input_trainingSites,by.x="ID",by.y="ClassID")
@@ -177,7 +182,7 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
 # trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
 #trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/
 trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
-resolution_x <- 300
+resolution_x <- 100 #300
 # resolution_y <- "auto"
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
@@ -207,7 +212,7 @@ trainingSites <- st_transform(trainingSites, crs=fitting_epsg_as_string)
 trainingSites
 image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_coverage)
 # image_collection_for_trainingSites
-cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, resolution_y, start_day, end_day, bbox_wgs84)
+cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, bbox_wgs84)
 cube_view_for_trainingSites
 cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
 # cube_for_trainingSites
