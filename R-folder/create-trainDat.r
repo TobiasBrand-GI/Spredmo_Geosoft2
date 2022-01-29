@@ -183,6 +183,13 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
 }
 
 
+
+#################################################
+# parameter declaration
+#################################################
+
+
+
 #####
 ### parameters from plumber APIs:
 # trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
@@ -195,15 +202,21 @@ end_day <- "2021-04-30"
 cloud_coverage <- 80
 path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
 
 
-# paste(path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites, )
+
+#################################################
+# function calls
+#################################################
+
 
 
 #####
 ### this function calls are always needed
 image_mask_for_data_cube <- set_image_mask_for_data_cube()
 set_threads()
+get_sentinelDat_for_aoi(aoi)
 
 
 #####
@@ -237,6 +250,7 @@ get_combined_trainingData <- function(use_trainingSites) {
     
 return(trainingDat_sp)
 }
+
 
 
 #####
