@@ -6,22 +6,18 @@ library(gdalcubes)
 library(sp)
 library(terra)
 
-# sentinel <- stack("predictors/predictors_muenster.grd")
-#Falls nicht im gleichen crs, dann projizieren!!
-# trainingSites <- st_transform(trainingSites,crs(sentinel))
-
 
 #####
-### get right crs
-find_right_crs <- function(input_area) {
-  #longitude <- st_bbox(input_area)[1]
-  #utm_zone <- (floor((longitude + 180)/6) %% 60) + 1
-  #targetString <- paste('EPSG:326',utm_zone, sep = "")
-  # it only works with following EPSG-code 
-  targetString <- paste('EPSG:4326')
-  message("DONE: get right crs")
-  return(targetString)
-}
+### get right crs - function not needed any more
+# find_right_crs <- function(input_area) {
+  # longitude <- st_bbox(input_area)[1]
+  # utm_zone <- (floor((longitude + 180)/6) %% 60) + 1
+  # targetString <- paste('EPSG:326',utm_zone, sep = "")
+  # it only works with following EPSG-code
+  # targetString <- paste('EPSG:4326')
+  # message("DONE: get right crs")
+  # return(targetString)
+# }
 
 
 #####
@@ -129,7 +125,7 @@ generate_raster_cube <- function(input_area, input_collection, input_cube_view, 
 #####
 ### save data from data cube as GeoTiff
 save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
-    warning("!!! check path !!!")
+    warning(">>> check path !!!")
     message("DO NOT WORRY :)")
     message("this function takes some time:")
     write_tif(input_cube,
@@ -148,7 +144,7 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
 #####
 ### Raster data (predictor variables)
 load_predictors_and_rename_bands <- function() {
-    warning("!!! check path !!!")
+    warning(">>> check path !!!")
     # sen_ms <- stack(paste(input_storage_path, input_prefix))
     sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
     # rename bands
@@ -181,8 +177,8 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     #print(head(extr_raster))
     message("DONE: merge vector and raster")
     saveRDS(extr,file="C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/merged_trainData.RDS")
-    message("DONE: save RDS")
-    #warning("check return :) ...")
+    message("DONE: save combined Data as RDS")
+    warning(">>> check return :) ...")
     return(extr_sp)
 }
 
@@ -212,28 +208,37 @@ set_threads()
 
 #####
 ### function calls in case of no model
-fitting_epsg_as_string <- find_right_crs(trainingSites)
-# fitting_epsg_as_string
-bbox_wgs84 <- calculate_bbox(trainingSites, fitting_epsg_as_string)
-# bbox_wgs84
-sentinelDat <- get_sentinelDat_form_stac(bbox_wgs84, start_day, end_day)
-# sentinelDat
-trainingSites <- st_transform(trainingSites, crs=fitting_epsg_as_string)
-# trainingSites
-image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_coverage)
-# image_collection_for_trainingSites
-cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, bbox_wgs84)
-# cube_view_for_trainingSites
-cube_for_trainingSites <- generate_raster_cube(trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
-# cube_for_trainingSites
-# plot(cube_for_trainingSites, zlim=c(0, 1800))
-# save as geotif
-save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
-# combine satelite with classified polygones
-predictors_stack <- load_predictors_and_rename_bands()
-predictors_stack
-trainingDat_terra <- combine_sentinel_with_trainingSites(predictors_stack, trainingSites)
-trainingDat_sp <- combine_sentinel_with_trainingSites(predictors_stack, trainingSites)
-head(trainingDat)
-View(trainingDat_sp)
-View(trainingDat_terra)
+get_combined_trainingData <- function(use_trainingSites) {
+    fitting_epsg_as_string <- paste('EPSG:4326') # find_right_crs(use_trainingSites) # function not needed any more
+    # fitting_epsg_as_string
+    bbox_wgs84 <- calculate_bbox(use_trainingSites, fitting_epsg_as_string)
+    # bbox_wgs84
+    sentinelDat <- get_sentinelDat_form_stac(bbox_wgs84, start_day, end_day)
+    # sentinelDat
+    use_trainingSites <- st_transform(use_trainingSites, crs = fitting_epsg_as_string)
+    # use_trainingSites
+    image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_coverage)
+    # image_collection_for_trainingSites
+    cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, bbox_wgs84)
+    # cube_view_for_trainingSites
+    cube_for_trainingSites <- generate_raster_cube(use_trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
+    # cube_for_trainingSites
+    # plot(cube_for_trainingSites, zlim=c(0, 1800))
+    # save as geotif
+    save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
+    # combine satelite with classified polygones
+    predictors_stack <- load_predictors_and_rename_bands()
+    # predictors_stack
+    # trainingDat_terra <- combine_sentinel_with_trainingSites(predictors_stack, use_trainingSites)
+    trainingDat_sp <- combine_sentinel_with_trainingSites(predictors_stack, use_trainingSites)
+    # head(trainingDat)
+    # View(trainingDat_sp)
+    # View(trainingDat_terra)
+    
+return(trainingDat_sp)
+}
+
+
+#####
+### function called by frontend or plumber
+get_combined_trainingData(trainingSites)
