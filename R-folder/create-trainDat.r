@@ -153,8 +153,8 @@ load_predictors_and_rename_bands <- function() {
     sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
     # rename bands
     names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    names(sentinel)
-    plotRGB(sentinel,stretch="lin",r=3,g=2,b=1)
+    # names(sentinel)
+    # plotRGB(sentinel,stretch="lin",r=3,g=2,b=1)
     message("DONE: load as RasterStack")
     return(sentinel)
 }
@@ -171,13 +171,14 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     # extr <- raster::extract(spatRaster, spatVector, df=TRUE) # extract from raster works only with spatRaster and spatVector
     # rename bands
     names(extr) <- c("ID","B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    head(extr)
-    input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
-    extr <- merge(input_trainingSites, extr)   #,by.x="ID",by.y="ClassID")
+    print(head(extr))
+    # input_trainingSites$ClassID <- 1:nrow(input_trainingSites) 
+    extr <- terra::merge(input_trainingSites, extr)   #,by.x="ID",by.y="ClassID")
     head(extr)
     message("DONE: merge vector and raster")
     saveRDS(extr,file="trainData.RDS")
     message("DONE: save RDS")
+    return(extr)
 }
 
 
@@ -225,5 +226,6 @@ cube_for_trainingSites
 save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
 # combine satelite with classified polygones
 predictors_stack <- load_predictors_and_rename_bands()
-trainingDat <- combine_sentinel_with_trainingSites(predictors_stack, trainingSites) # can't test this
-
+predictors_stack
+trainingDat <- combine_sentinel_with_trainingSites(predictors_stack, trainingSites)
+head(trainingDat)
