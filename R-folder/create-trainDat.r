@@ -5,6 +5,15 @@ library(rstac)
 library(gdalcubes)
 library(sp)
 library(terra)
+library(caret)
+library(CAST)
+#additional required packages:
+library(latticeExtra)
+library(foreach)
+library(iterators)
+library(doParallel)
+library(parallel)
+# library(Orcs)
 
 
 
@@ -139,7 +148,7 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
     message("this function takes some time:")
     write_tif(input_cube,
             dir = input_storage_path,
-            prefix = input_prefix,
+            prefix = input_prefix, # basename(tempfile(pattern = input_prefix)),
             overviews = FALSE,
             COG = TRUE,
             rsmpl_overview = "nearest",
@@ -210,12 +219,12 @@ resolution_x <- 100 #300
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 80
-path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
+path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/"
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 
 # thinks for aoi
 aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
-path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
+path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/"
 prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
 
@@ -314,5 +323,7 @@ aoi_with_sentinel
 #################################################
 #################################################
 
-
-
+f_end <- substr(start_day,1, nchar(start_day)-3)
+f <- paste0(path_for_satelite_for_aoi, prefix_for_geoTiff_for_aoi, f_end, '.tif', sep="")
+f
+test <- st_read(f) # path is correct but file not found/ cannot open ...
