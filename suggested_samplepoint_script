@@ -26,8 +26,8 @@ clipped <-AOI_Polygon-AOA_Polygon
 
 ##random suggested points to improve AOA
 pts <- spsample(clipped, 1000, type = 'random')
-plot(clipped)
-plot(pts, add = T, col = 'red')
+#plot(clipped)
+#plot(pts, add = T, col = 'red')
 pts1 <- data.frame(x=pts$x,y=pts$y) 
 coordinates(pts1) <- ~x+y
 
