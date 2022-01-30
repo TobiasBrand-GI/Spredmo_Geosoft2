@@ -4,8 +4,8 @@ aoa.tif
 di_of_aoa.tif
 lulc-prediction.tif
 lulc-prediction.tif.aux.xml
-satelite_for_trainingSites_*.tif
-satelite_for_trainingSites_*.xml
+satelite_for_*.tif
+satelite_for_*.xml
 .RData
 .Rhistory
 
