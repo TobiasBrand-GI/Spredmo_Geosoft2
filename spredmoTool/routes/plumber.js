@@ -32,7 +32,7 @@ router.post('/',function(req, res) {
 
 
 router.get('/results',function(req, res) {
-  axios.get('http://127.0.0.1:8214/results')
+  axios.get('http://127.0.0.1:8000/results')
     .then(response => {
       console.log(response.data)
       res.send(response.data)

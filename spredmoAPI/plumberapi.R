@@ -1,5 +1,4 @@
 library(plumber)
-library(rjson)
 #* @apiTitle Plumber Spredmo API
 
 #* Log some information about the incoming request
@@ -42,15 +41,12 @@ function(req) {
 #* @preempt cors
 function() {
   #sample_points <- fromJSON(file = "testdata/result_sample_points.json")
-  
-  
   list(
     
     aoa_tif = "path/aoa_tif",
     prediction_tif = "path/prediction_tif",
     sample_points = "path/samplepoints",
     model = "path/model"
-    
     
   )
 }
