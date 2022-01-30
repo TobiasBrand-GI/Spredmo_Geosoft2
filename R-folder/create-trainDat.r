@@ -202,25 +202,21 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
 
 
 #####
-### prepair aoi
-get_sentinelDat_for_aoi <-function(input_aoi) {
-    warning(">>> check path !!!")
-    aoi_bbox_wgs84 <- calculate_bbox(input_aoi, fitting_epsg_as_string)
-    # bbox_wgs84
-    aoi_sentinelDat <- get_sentinelDat_form_stac(aoi_bbox_wgs84, start_day, end_day)
-    # sentinelDat
-    input_aoi <- st_transform(input_aoi, crs = fitting_epsg_as_string)
-    # use_trainingSites
-    image_collection_for_aoi <- create_filtered_image_collection(aoi_sentinelDat, cloud_coverage)
-    # image_collection_for_trainingSites
-    cube_view_for_aoi <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, aoi_bbox_wgs84)
-    # cube_view_for_trainingSites
-    cube_for_aoi <- generate_raster_cube(input_aoi, image_collection_for_aoi, cube_view_for_aoi, image_mask_for_data_cube, fitting_epsg_as_string)
-    # cube_for_trainingSites
-    # plot(cube_for_trainingSites, zlim=c(0, 1800))
-    # save as geotif
-    save_data_as_geoTiff(cube_for_aoi, input_storage_aoi_path, input_aoi_prefix)
-}
+### parameters from plumber APIs:
+# trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
+resolution_x <- 100 #300
+# resolution_y <- "auto"
+start_day <- "2021-04-01"
+end_day <- "2021-04-30"
+cloud_coverage <- 80
+path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
+prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
+
+# thinks for aoi
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
+path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
+prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
 
 
@@ -238,7 +234,28 @@ fitting_epsg_as_string <- paste('EPSG:4326') # find_right_crs(use_trainingSites)
 # fitting_epsg_as_string
 image_mask_for_data_cube <- set_image_mask_for_data_cube()
 set_threads()
-get_sentinelDat_for_aoi(aoi)
+
+
+#####
+### prepair aoi
+get_sentinelDat_for_aoi <-function(input_aoi) {
+    warning(">>> check path !!!")
+    aoi_bbox_wgs84 <- calculate_bbox(input_aoi, fitting_epsg_as_string)
+    # bbox_wgs84
+    aoi_sentinelDat <- get_sentinelDat_form_stac(aoi_bbox_wgs84, start_day, end_day)
+    # sentinelDat
+    input_aoi <- st_transform(input_aoi, crs = fitting_epsg_as_string)
+    # use_trainingSites
+    image_collection_for_aoi <- create_filtered_image_collection(aoi_sentinelDat, cloud_coverage)
+    # image_collection_for_trainingSites
+    cube_view_for_aoi <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, aoi_bbox_wgs84)
+    # cube_view_for_trainingSites
+    cube_for_aoi <- generate_raster_cube(input_aoi, image_collection_for_aoi, cube_view_for_aoi, image_mask_for_data_cube, fitting_epsg_as_string)
+    # cube_for_trainingSites
+    # plot(cube_for_trainingSites, zlim=c(0, 1800))
+    # save as geotif
+    save_data_as_geoTiff(cube_for_aoi, path_for_satelite_for_aoi, prefix_for_geoTiff_for_aoi)
+}
 
 
 #####
@@ -272,25 +289,6 @@ get_combined_trainingData <- function(use_trainingSites) {
 }
 
 
-#####
-### parameters from plumber APIs:
-# trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
-#trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
-resolution_x <- 100 #300
-# resolution_y <- "auto"
-start_day <- "2021-04-01"
-end_day <- "2021-04-30"
-cloud_coverage <- 80
-path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
-prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
-
-# thinks for aoi
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
-path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
-prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
-
-
 
 
 #################################################
@@ -301,5 +299,20 @@ prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
 
 #####
-### function called by frontend or plumber
-get_combined_trainingData(trainingSites)
+### functions for createing and saveing aoi and trainData 
+combined_trainingData <- get_combined_trainingData(trainingSites)
+View(combined_trainingData)
+aoi_with_sentinel <- get_sentinelDat_for_aoi(aoi)
+aoi_with_sentinel
+
+
+
+
+#################################################
+#################################################
+# training, prediction, aoa, sample_points
+#################################################
+#################################################
+
+
+
