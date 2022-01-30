@@ -330,3 +330,70 @@ sentinell_aoi <- stack(file_path)
 mapview(sentinell_aoi)
 
 
+# individual id for every row in data.frame is needed
+combined_trainingData$row_id <- 1:nrow(combined_trainingData) 
+
+
+#####
+# TODO:
+# should not be possible only for Muenster
+# ... for the whole world 
+### Reference data
+warning("!!! check path !!!")
+# <- readRDS("C:/Users/.../GitHub/OpenGeoHub_2021/data/....RDS")
+names(combined_trainingData)
+# trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
+# names(trainDat)
+# validationDat <- trainSites[trainSites$Region=="Muenster",]
+# names(validationDat)
+# head(trainSites)
+
+#see unique regions in train set:
+unique(combined_trainingData$Landnutzungsklasse)
+
+
+#####
+### Predictors and response
+trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
+# head.matrix(trainids) # trainids is not a list, but matrix
+trainDat <- trainDat[trainids,]
+trainDat <- trainDat[complete.cases(trainDat),]
+
+
+predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
+response <- "Label" # oder Landnutzungsklasse
+# head.matrix(response)
+
+
+#####
+## Model training and validation
+# train the model
+ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
+model <- train(trainDat[,predictors],
+               trainDat[,response],
+               method="rf",
+               metric="Kappa",
+               trControl=ctrl_default,
+               importance=TRUE,
+               ntree=50)
+model
+
+
+#####
+## Model prediction
+prediction <- predict(sen_ms, model)
+
+
+#####
+## Area of Applicability
+# needed packages for following code are:
+#    foreach, iterators, parallel, doParallel, cast, caret
+# The calculation of the AOA is quite time consuming.
+# To make a bit faster we use a parallelization.
+cl <- makeCluster(4)
+registerDoParallel(cl)
+AOA <- aoa(sen_ms,model,cl=cl)
+# plot(AOA)
+message(paste0("Percentage of Münster that is within the AOA: ",
+               round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
+
