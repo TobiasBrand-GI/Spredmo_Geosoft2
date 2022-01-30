@@ -29,11 +29,21 @@ cors <- function(req, res) {
   }
 }
 
+#* @filter createtxt
+function(req) {
+  a <- 3
+  savestring <- paste0("data",Sys.Date())
+  saveRDS(a, file = savestring)
+  plumber::forward()
+}
+
 #* Echo back the input
 #* @get /results
 #* @preempt cors
 function() {
   #sample_points <- fromJSON(file = "testdata/result_sample_points.json")
+  
+  
   list(
     
     aoa_tif = "path/aoa_tif",
