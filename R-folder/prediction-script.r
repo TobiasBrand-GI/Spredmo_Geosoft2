@@ -14,7 +14,7 @@ library(parallel)
 #####
 ### Raster data (predictor variables)
 warning("!!! check path !!!")
-sen_ms <- stack("C:/Users/.../GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
+sen_ms <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
 # rename bands
 names(sen_ms) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
 plot(sen_ms)
@@ -68,7 +68,7 @@ model
 
 #####
 ## Model prediction
-prediction <- predict(sen_ms,model)
+prediction <- predict(sen_ms, model)
 
 
 #####
