@@ -1,110 +1,60 @@
-setwd('C:/Users/jan96/Desktop/Geosoftware2/Spredmo_Geosoft2-branch_gustav/R-folder')
+install.packages('jsonlite')
+install.packages('rgeos')
+install.packages('rgdal')
+install.packages('sf')
 library(jsonlite)
-##**
-##plumber funktion
+library(rgeos)
+library(rgdal)
+library(sf)
+
+setwd('C:/Users/jan96/Desktop/Geosoftware2/Spredmo_Geosoft2-branch_gustav_29012022/R-folder')
+#Plumber function
 calculate_random_points <- function(Areaofinterest, AOA) {
-##**
+#AOA von UTM auf wgs84 umwandeln
+AOA_wgs84 <-projectRaster(from = AOA,
+   crs=crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#json to bbox
+bbox <- st_bbox(Areaofinterest)
+AOI_Polygon<-bbox2SP(n =bbox$ymax, s =bbox$ymin, w = bbox$xmin, e =bbox$xmax ,
+                         proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
 
-##
-#plot(AOA$AOA)
-##AoA raster to polygon
-AOA_Polygon <-rasterToPolygons(AOA, fun=NULL, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ##AOA$AOA vorher
+##AOA_raster in Polygon umwandeln
+AOA_Polygon <-rasterToPolygons(AOA_wgs84, fun=NULL, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ##passt
 ##AOA von AOI abziehen
-clipped <-Areaofinterest-AOA_Polygon
-##Polygon mt area of Interest, kann weggelassen werden
-plot(clipped, add=T)
-## Punkte in rest generieren
+clipped <-AOI_Polygon-AOA_Polygon  
+
+##random suggested points to improve AOA
 pts <- spsample(clipped, 1000, type = 'random')
-##Punkte plotten
+plot(clipped)
 plot(pts, add = T, col = 'red')
+pts1 <- data.frame(x=pts$x,y=pts$y) 
+coordinates(pts1) <- ~x+y
 
-
-#utm zu lat lon umwandeln
-utm1 <- data.frame(x=pts$x,y=pts$y) 
-coordinates(utm1) <- ~x+y
-
-class(utm1)
-##gucken wegen zone die sich verändern kann
-proj4string(utm1) <- CRS("+proj=utm +zone=31 +datum=WGS84 +units=m +ellps=WGS84") 
-utm2 <- spTransform(utm1,CRS("+proj=longlat +datum=WGS84"))
+class(pts1)
 
 #als Liste ausgeben
-Samplepoint_coordinates_list <-coordinates(utm2)
+Samplepoint_coordinates_list <-coordinates(pts1)
 ##swap latitude and longitude
 Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
 #Samplepointstojson
 
 Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
-
 return(Samplepoint_coordinates_as_Json)
 }
 
 
-#-------------------------------------------------------------------
-#test mit AOA$AOA von gustav Münster
-#box area of interest
-##AOI Koordinaten aus leaflet karte müssen hier rein
-x_coord2 <- c(810000.0,  810000.0,  830000.0, 830000.0, 810000.0)
-y_coord2 <- c(5760000.0, 5770000.0, 5770000.0, 5760000.0, 5760000.0)
-sps2 <- cbind(x_coord2, y_coord2)
+##AOI wgs84 as geojson
+AOI_Shape_WGS84 <- read_sf("C:/Users/jan96/Desktop/Geosoftware2/Spredmo_Geosoft2-branch_gustav_29012022/R-folder/data/NL_Test_AOI_wgs84.geojson")
 
-###zum polygon umwandeln
-polygon <- spPolygons(sps2)
-##**
-plot(AOA$AOA)
-##plumber funktion
-calculate_random_points(polygon, AOA$AOA)
-message("DONE: calculate_random_points()")
-##**
 
-#write json
+##AOA here as UTM
+str_name<-'tests/result_aoa.tif' 
+AOA_UTM=raster(str_name)
+#-----
 
-#write(Samplepoint_coordinates_as_Json, "output.json")
+calculate_random_points(AOI_Shape_WGS84, AOA_UTM)
 
 
 
-#--------------------------------------------------------------
-##Methodenaufruf mit tif test
-x_coord3 <- c(685000.0,  685000.0,  688000.0, 688000.0, 685000.0)
-y_coord3 <- c(5678000.0, 5682000.0, 5682000.0, 5678000.0, 5678000.0)
-sps3 <- cbind(x_coord3, y_coord3)
 
-###zum polygon umwandeln
-polygon1 <- spPolygons(sps3)
-
-str_name<-'data/gustav/aoa.tif' 
-imported_raster=raster(str_name)
-plot(imported_raster)
-
-calculate_random_points(polygon1, imported_raster)
-message("DONE: calculate_random_points()")
-------------------------------------------------------------------
-##Berechnungen mit tif test
-library(raster)
-
-setwd('C:/Users/jan96/Desktop/Geosoftware2/Spredmo_Geosoft2-branch_gustav/R-folder')
-##import tif
-str_name<-'data/gustav/aoa.tif' 
-imported_raster=raster(str_name)
-
-imported_raster_Polygon <-rasterToPolygons(imported_raster, fun=NULL, n=4, na.rm=TRUE, digits=12, dissolve=FALSE)
-
-#single_imported_raster_Polygon<- aggregate(imported_raster_Polygon)
-##koordinaten basteln für area of interest
-x_coord3 <- c(685000.0,  685000.0,  688000.0, 688000.0, 685000.0)
-y_coord3 <- c(5678000.0, 5682000.0, 5682000.0, 5678000.0, 5678000.0)
-sps3 <- cbind(x_coord3, y_coord3)
-
-###zum polygon umwandeln
-polygon1 <- spPolygons(sps3)
-
-
-clipped <-polygon1-single_imported_raster_Polygon
-##Polygon mt area of Interest, kann weggelassen werden
-plot(clipped, add=T)
-## Punkte in rest generieren
-pts <- spsample(clipped, 10000, type = 'random')
-##Punkte plotten
-plot(pts, add = T, col = 'red')
------------------------------------------------------------------------------
