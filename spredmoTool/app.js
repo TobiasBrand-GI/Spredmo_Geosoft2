@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
+
 var indexRouter = require('./routes/index');
 var plumberRouter = require('./routes/plumber')
 
@@ -31,7 +33,6 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.redirect("error.html");
+  //res.redirect("error.html");
 });
-
 module.exports = app;

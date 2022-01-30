@@ -77,7 +77,7 @@ async function download(){
  * @param {*} unixTime unix timestemp
  * @returns String of Numbers encoding the day and time with Year, Month, Day, Hour, Minutes and Seconds
  */
- function convertTimes(unixTime){
+ function createFileNames(unixTime){
     let dateObject = new Date(unixTime);
     let converted=dateObject.toLocaleTimeString([],{year:'2-digit', month:'2-digit', day:'2-digit', hour: '2-digit', minute:'2-digit',second:"2-digit"});
     for (i=0; i<2; i++){

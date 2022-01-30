@@ -1,71 +1,51 @@
 var express = require('express');
 var router = express.Router();
 const axios = require('axios');
+const multer = require('multer');
 const scp = require('scp')
 const fs = require('fs');
 const { default: Client } = require('node-scp');
+const { send } = require('process');
 
-router.post('/',function(req, res) {
-  if (req.body.modus=="model"){
-    axios.get('http://127.0.0.1:4134/echo?msg=sdf')
-    .then(response => {
-      msg=response.data.msg[0]
-      console.log(msg)
-    })
-    .catch(error => {
-      console.log(error);
-    })
+var fileName;
+var storage = multer.diskStorage({
+  destination: function (request, file, callback) {
+      callback(null, './tmp');
+  },
+  filename: function (request, file, callback) {
+      fileName=file.originalname;
+      callback(null, file.originalname);
   }
-  else if(req.body.modus=="tdata"){
-    axios.get('http://127.0.0.1:4134/echo?msg=Hello%2Cthis%20is%20the%20mean')
-    .then(response => {
-      msg=response.data.msg[0]
-      console.log(msg)
-    })
-    .catch(error => {
-      console.log(error);
-    })
+});
+
+const uploadDest = multer({storage:storage})
+router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
+  let radioButton = req.body.modelInput;
+  if(radioButton==="model"){
+    upload("./tmp/"+fileName)
+  }else if(radioButton==="train"){
+    console.log("train")
+  }else{
+    console.log("No mode selected")
   }
-  async function upload(){
-    try {
-      const client = await Client({
-        host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
-    port: 22, //port used for scp 
-    username: 'ubuntu', //username to authenticate
-    privateKey: fs.readFileSync('G:/GitHubRepositories/Spredmo_Geosoft2/spredmoTool/public/images/geosoft22021.pem'),
-    // passphrase: 'your key passphrase', 
-      })
-      await client.uploadFile('public/images/logo.jpeg', '/tmp/logoTest.jpeg')
-      // you can perform upload multiple times
-      client.close() // remember to close connection after you finish
-    } catch (e) {
-      console.log(e)
-    }
+  try{
+  }catch(e){
+    console.log(e)
   }
-  upload();
   
   res.redirect("/download.html")
-}
-)
+})
 
-router.get('/results',function(req, res) {
-  axios.get('http://127.0.0.1:4134/echo?msg=Hello%2Cthis%20is%20the%20mean')
-    .then(response => {
-      msg=response.data.msg[0]
-      res.send(msg)
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  }
-)
-router.get('/geotiff', async function(req, res) {
-  const client =  await Client({
+router.post('/results',function(req, res) {
+})
+  
+async function download(){
+  try{
+    const client =  await Client({
     host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
     port: 22, //port used for scp 
     username: 'ubuntu', //username to authenticate
     privateKey: fs.readFileSync('G:/GitHubRepositories/Spredmo_Geosoft2/spredmoTool/public/images/geosoft22021.pem'),
-    // passphrase: 'your key passphrase', 
   }).then(client => {
     client.downloadFile('/tmp/aoa.tif', 'public/images/test.tif')
       .then(response => {
@@ -73,6 +53,49 @@ router.get('/geotiff', async function(req, res) {
       })
       .catch(error => {console.log(error)})
   }).catch(e => console.log(e))
-})
+  }catch(e){
+    console.log(e)
+  }
+}
 
+async function upload(localPath, newFileName){
+  try {
+    const client = await Client({
+      host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
+      port: 22, //port used for scp 
+      username: 'ubuntu', //username to authenticate
+      privateKey: fs.readFileSync('G:/GitHubRepositories/Spredmo_Geosoft2/spredmoTool/public/images/geosoft22021.pem'),
+    })
+    await client.uploadFile(localPath, '/tmp/'+newFileName)
+    // you can perform upload multiple times
+    client.close() // remember to close connection after you finish
+
+    fs.unlink(localPath,(err)=>{
+      console.log(err)
+    })
+  } catch (e) {
+    console.log(e)
+  }
+
+}
+
+/**
+ * Takes a unix timestemp to convert it to String of numbers to ensure unique file names
+ * @param {*} unixTime unix timestemp
+ * @returns String of Numbers encoding the day and time with Year, Month, Day, Hour, Minutes and Seconds
+ */
+ function createFileNames(unixTime){
+  let dateObject = new Date(unixTime);
+  let converted=dateObject.toLocaleTimeString([],{year:'2-digit', month:'2-digit', day:'2-digit', hour: '2-digit', minute:'2-digit',second:"2-digit"});
+  for (i=0; i<2; i++){
+      converted=converted.replace('.','');
+  }
+  converted=converted.replace(' ','');
+  converted=converted.replace(',','_');
+  for (i=0; i<2; i++){
+      converted=converted.replace(':','');
+  }
+  console.log(converted)
+  return converted;
+}
 module.exports = router;
