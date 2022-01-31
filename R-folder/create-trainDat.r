@@ -425,8 +425,8 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   registerDoParallel(cl)
   AOA <- aoa(input_sentinell_aoi, input_model, cl=cl)
   # plot(AOA)
-  message(paste0("Percentage of Muenster that is within the AOA: ",
-                 round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
+  # message(paste0("Percentage of Muenster that is within the AOA: ",
+  #                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
   message("DONE: prediction_and_aoa")
   #}
 
