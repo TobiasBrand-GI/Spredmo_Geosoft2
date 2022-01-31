@@ -448,6 +448,79 @@ writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft
 
 #################################################
 #################################################
+# calculate_random_points
+#################################################
+#################################################
+
+
+
+
+calculate_random_points <- function(Areaofinterest, AOA) {
+  #AOA von UTM auf wgs84 umwandeln
+  # print(st_crs(AOA))
+  #AOA_wgs84 <-projectRaster(from = AOA, crs=crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+  # print(st_crs(AOA_wgs84))
+  
+  #json to bbox
+  bbox <- st_bbox(Areaofinterest)
+  AOI_Polygon<-bbox2SP(n =bbox$ymax, s =bbox$ymin, w = bbox$xmin, e =bbox$xmax ,
+                       proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+  # print(bbox)
+  # print(AOI_Polygon)
+  
+  ##AOA_raster in Polygon umwandeln
+  AOA_Polygon <-rasterToPolygons(AOA, fun=NULL, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ## passt
+  ##AOA von AOI abziehen
+  clipped <- AOI_Polygon - AOA_Polygon  
+  # print(AOI_Polygon)
+  # print(AOA_Polygon)
+  print(clipped)
+  plot(clipped)
+  
+  
+  ##random suggested points to improve AOA
+  pts <- spsample(AOI_Polygon, 1000, type = 'random')
+  print(pts)
+  pts <- spsample(AOA_Polygon, 1000, type = 'random')
+  print(pts)
+  pts <- spsample(clipped, 1000, type = 'random')
+  print(pts)
+  plot(clipped)
+  #plot(pts, add = T, col = 'red')
+  pts1 <- data.frame(x=pts$x,y=pts$y) 
+  coordinates(pts1) <- ~x+y
+  
+  class(pts1)
+  
+  #als Liste ausgeben
+  Samplepoint_coordinates_list <-coordinates(pts1)
+  ##swap latitude and longitude
+  Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
+  #Samplepointstojson
+  
+  Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
+  return(Samplepoint_coordinates_as_Json)
+}
+
+
+##AOI wgs84 as geojson
+# AOI_Shape_WGS84 <- read_sf("C:/Users/jan96/Desktop/Geosoftware2/Spredmo_Geosoft2-branch_gustav_29012022/R-folder/data/NL_Test_AOI_wgs84.geojson")
+st_crs(aoi)
+
+
+##AOA here as UTM
+str_name<-'tests/result_aoa.tif' 
+AOA_UTM=raster(str_name)
+#-----
+
+# calculate_random_points(aoi, AOA_UTM)
+calculate_random_points(aoi, AOA$AOA)
+
+
+
+
+#################################################
+#################################################
 # end of process
 #################################################
 #################################################
