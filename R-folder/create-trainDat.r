@@ -27,8 +27,6 @@ library(rgdal)
 
 
 
-
-
 #####
 ### see how long it takes...
 start_time <- Sys.time()
@@ -46,18 +44,21 @@ message("start processing")
 
 #####
 ### parameters from plumber APIs:
-# trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
+extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
 trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Tobias_trainingSites.geojson")   #test_training_polygons.geojson")
-resolution_x <- 100 #300
-# resolution_y <- "auto"
+
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weert_nl.gpkg")
+resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 60
+response_for_lulc <- "Label" # oder: "Landnutzungsklasse"
+
+# thinks for trainingSites
 path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 
 # thinks for aoi
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weert_nl.gpkg")
 path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
 prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
@@ -326,23 +327,6 @@ get_combined_trainingData <- function(use_trainingSites) {
 
 
 #################################################
-# final calls
-#################################################
-
-
-
-
-#####
-### functions for createing and saveing aoi and trainData 
-combined_trainingData <- get_combined_trainingData(trainingSites)
-# View(combined_trainingData)
-get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
-
-
-
-
-
-#################################################
 #################################################
 # training, prediction, aoa, sample_points
 #################################################
@@ -353,117 +337,117 @@ get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
 
 
 #####
-### prepair raster stack
-file_end <- substr(start_day,1, nchar(start_day)-3)
-file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
-sentinell_aoi <- stack(file_path)
-names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
-# plot(sentinell_aoi)
-# library(mapview)
-# mapview(sentinell_aoi)
+### get stack with sentinel for aoi
+get_raster_stack <- function(){
+  ### prepair raster stack
+  file_end <- substr(start_day,1, nchar(start_day)-3)
+  file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
+  out_sentinell_aoi <- stack(file_path)
+  names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
+  # plot(sentinell_aoi)
+  # library(mapview)
+  # mapview(sentinell_aoi)
+  message("DONE: get_raster_stack")
+  return(out_sentinell_aoi)
+}
+
+
+#####
+### generate own model
+generate_own_model <- function(input_sentinell_aoi){
+  ### Reference data
+  warning(">>> check path !!!")
+  warning(">>> this is fake data !!!")
+  combined_trainingData <- fake_training_data_for_testing
+  # combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
+  # View(combined_trainingData)
+  trainDat <- combined_trainingData
+  trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
+  # head.matrix(trainids) # trainids is not a list, but matrix
+  trainDat <- trainDat[trainids,]
+  # View(trainDat)
+  trainDat <- trainDat[complete.cases(trainDat),]
+  #####
+  ### Predictors and response
+  predictors <- head(names(input_sentinell_aoi), -1) # without the "SCL"-band 
+  response <- response_for_lulc # "Label" # or "Landnutzungsklasse"  ?
+  # head.matrix(response)
+  #####
+  ## Model training and validation
+  # train the model
+  ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
+  model <- train(trainDat[,predictors],
+                 trainDat[,response],
+                 method="rf",
+                 metric="Kappa",
+                 trControl=ctrl_default,
+                 importance=TRUE,
+                 ntree=50)
+  model
+  return(model)
+  message("DONE: generate_own_model")
+}
+
+
 
 
 
 #####
-### Reference data
-warning(">>> check path !!!")
-warning(">>> this is fake data !!!")
-combined_trainingData <- fake_training_data_for_testing
-# combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
-# View(combined_trainingData)
+### prediction_and_aoa
+prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
+  #####
+  ## Model prediction
+  prediction <- predict(input_sentinell_aoi, input_model)
+  
+  
+  #####
+  ### validation - not needed (??)
+  #validation <- function(x,y=validationDat){
+  #  confusionMatrix(factor(x,
+  #                         levels=unique(unique(as.character(x),
+  #                                              unique(as.character(y$Label))))
+  #                         ),
+  #                  factor(y$Label,
+  #                         unique(unique(as.character(x),
+  #                                       unique(as.character(y$Label)))))
+  #                  )$overall[1:2]
+  #}
+  #pred_muenster_valid <- predict(model, validationDat)
+  #head(pred_muenster_valid)
+  #head(validationDat$Label)
+  #validation(pred_muenster_valid)
+  
+  
+  #####
+  ## Area of Applicability
+  # needed packages for following code are:
+  #    foreach, iterators, parallel, doParallel, cast, caret
+  # The calculation of the AOA is quite time consuming.
+  # To make a bit faster we use a parallelization.
+  cl <- makeCluster(4)
+  registerDoParallel(cl)
+  AOA <- aoa(input_sentinell_aoi, input_model, cl=cl)
+  # plot(AOA)
+  message(paste0("Percentage of Muenster that is within the AOA: ",
+                 round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
+  message("DONE: prediction_and_aoa")
+  #}
 
-
-trainDat <- combined_trainingData #[combined_trainingData$Region!="Muenster",]
-#trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
-# names(trainDat)
-
-
-# validationDat <- combined_trainingData[combined_trainingData$Region=="Muenster",] # not needed perhaps
-# names(validationDat)
-
-
-#see unique regions in train set:
-# unique(combined_trainingData$Region)
-# unique(combined_trainingData$Landnutzungsklasse) # unique Region should
-# View(combined_trainingData)
-
-
-#####
-### 
-# trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
-trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
-# head.matrix(trainids) # trainids is not a list, but matrix
-trainDat <- trainDat[trainids,]
-# View(trainDat)
-trainDat <- trainDat[complete.cases(trainDat),]
-
-
-#####
-### Predictors and response
-predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
-response <- "Label" # or Landnutzungsklasse  ?
-# head.matrix(response)
-
-
-#####
-## Model training and validation
-# train the model
-ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
-model <- train(trainDat[,predictors],
-               trainDat[,response],
-               method="rf",
-               metric="Kappa",
-               trControl=ctrl_default,
-               importance=TRUE,
-               ntree=50)
-model
-
-
-#####
-## Model prediction
-prediction <- predict(sentinell_aoi, model)
-
-
-#####
-### validation - not needed (??)
-#validation <- function(x,y=validationDat){
-#  confusionMatrix(factor(x,
-#                         levels=unique(unique(as.character(x),
-#                                              unique(as.character(y$Label))))
-#                         ),
-#                  factor(y$Label,
-#                         unique(unique(as.character(x),
-#                                       unique(as.character(y$Label)))))
-#                  )$overall[1:2]
-#}
-#pred_muenster_valid <- predict(model, validationDat)
-#head(pred_muenster_valid)
-#head(validationDat$Label)
-#validation(pred_muenster_valid)
-
-
-#####
-## Area of Applicability
-# needed packages for following code are:
-#    foreach, iterators, parallel, doParallel, cast, caret
-# The calculation of the AOA is quite time consuming.
-# To make a bit faster we use a parallelization.
-cl <- makeCluster(4)
-registerDoParallel(cl)
-AOA <- aoa(sentinell_aoi, model, cl=cl)
-# plot(AOA)
-message(paste0("Percentage of Muenster that is within the AOA: ",
-               round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
-
-
-#####
-### savings for output
-saveRDS(model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
-writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
-writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
-writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
-
-
+  #####
+  ### savings for output
+  # save_outputs <- function(input_own_model){
+  saveRDS(input_model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+  writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
+  writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
+  writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
+  message("DONE: save_outputs")
+  
+  
+  #####
+  # calculate_random_points(aoi, AOA_UTM)
+  sample_points <- calculate_random_points(aoi, AOA$AOA)
+  return(sample_points)
+}
 
 
 #################################################
@@ -489,7 +473,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   ##AOA von AOI abziehen
   clipped <- AOI_Polygon - AOA_Polygon  
   
-  ##Anzahl an Punkten skalierend zur größe der AOI
+  ##Anzahl an Punkten skalierend zur Groessee der AOI
   get_area_clipped<-areaPolygon(clipped) 
   quantity_points<-get_area_clipped*0.00001
   
@@ -516,11 +500,53 @@ calculate_random_points <- function(Areaofinterest, AOA) {
 }
 
 
-# calculate_random_points(aoi, AOA_UTM)
-sample_points <- calculate_random_points(aoi, AOA$AOA)
+
+
+#################################################
+# final calls
+#################################################
 
 
 
+
+without_model_but_trainingSites <- function () {
+  # createing and savnig trainData 
+  get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
+  # if no model input own training data gets generated
+  combined_trainingData <- get_combined_trainingData(trainingSites)
+  # get sentinell for aoi
+  sentinell_aoi <- get_raster_stack()
+  # create own model
+  own_model <- generate_own_model(sentinell_aoi)
+  # prediction and aoa
+  suggested_sample_points <- prediction_and_aoa(own_model, sentinell_aoi) # no return
+  # save_outputs
+  # save_outputs(own_model) # no return
+  # calculate_random_points(aoi, AOA_UTM)
+  # sample_points <- calculate_random_points(aoi, AOA$AOA)
+  message("DONE: without_model_but_trainingSites")
+  return(suggested_sample_points)
+}
+
+
+with_extern_model <- function (extern_input_model) {
+  # createing and savnig trainData 
+  get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
+  # get sentinell for aoi
+  sentinell_aoi <- get_raster_stack() 
+  # prediction and aoa
+  suggested_sample_points <- prediction_and_aoa(extern_input_model, sentinell_aoi) # no return
+  # save_outputs
+  # save_outputs(extern_input_model) # no return
+  # calculate_random_points(aoi, AOA_UTM)
+  # sample_points <- calculate_random_points(aoi, AOA$AOA)
+  message("DONE: with_extern_model")
+  return(suggested_sample_points)
+}
+
+
+suggested_sample_points_for_plumber <- with_extern_model(extern_model) 
+suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no input
 
 #################################################
 #################################################
