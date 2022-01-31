@@ -13,6 +13,7 @@ library(foreach)
 library(iterators)
 library(doParallel)
 library(parallel)
+library(magrittr)
 # library(Orcs)
 
 
@@ -312,8 +313,7 @@ get_combined_trainingData <- function(use_trainingSites) {
 combined_trainingData <- get_combined_trainingData(trainingSites)
 View(combined_trainingData)
 
-aoi_with_sentinel <- get_sentinelDat_for_aoi(aoi)
-aoi_with_sentinel
+get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
 
 
 
@@ -325,13 +325,18 @@ aoi_with_sentinel
 #################################################
 
 file_end <- substr(start_day,1, nchar(start_day)-3)
-file_path <- paste(path_for_satelite_for_aoi, prefix_for_geoTiff_for_aoi, f_end, ".tif", sep="")
+file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
 sentinell_aoi <- stack(file_path)
+# rename bands
+names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
+plot(sentinell_aoi)
+library(mapview)
 mapview(sentinell_aoi)
 
 
 # individual id for every row in data.frame is needed
 combined_trainingData$row_id <- 1:nrow(combined_trainingData) 
+View(combined_trainingData)
 
 
 #####
@@ -343,26 +348,34 @@ warning("!!! check path !!!")
 # <- readRDS("C:/Users/.../GitHub/OpenGeoHub_2021/data/....RDS")
 names(combined_trainingData)
 # trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
-# names(trainDat)
+trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
+names(trainDat)
 # validationDat <- trainSites[trainSites$Region=="Muenster",]
 # names(validationDat)
 # head(trainSites)
 
 #see unique regions in train set:
-unique(combined_trainingData$Landnutzungsklasse)
+unique(combined_trainingData$Landnutzungsklasse) # unique Region should
+View(combined_trainingData)
 
 
 #####
 ### Predictors and response
 trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
-# head.matrix(trainids) # trainids is not a list, but matrix
+head.matrix(trainids) # trainids is not a list, but matrix
 trainDat <- trainDat[trainids,]
-trainDat <- trainDat[complete.cases(trainDat),]
+View(trainDat)
+
+# trainDat <- trainDat[complete.cases(trainDat),]  # does not work:
+# ERROR: Error in complete.cases(trainDat) : 
+#    ungültiger 'type' (list) des Argumentes
+
 
 
 predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
-response <- "Label" # oder Landnutzungsklasse
-# head.matrix(response)
+# response <- "Label" 
+response <- "Landnutzungsklasse"
+head.matrix(response)
 
 
 #####
