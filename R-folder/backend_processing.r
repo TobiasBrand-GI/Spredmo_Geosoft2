@@ -2,24 +2,24 @@
 ### clear r environment
 try(rm(list = ls()), message("Done: clear r environment"))
 
-library(raster)#
-library(sf)#
-library(rstac)#
-library(gdalcubes)#
-library(sp)#
-library(terra)#
-library(caret)#
-library(CAST)#
+library(raster)
+library(sf)
+library(rstac)
+library(gdalcubes)
+library(sp)
+library(terra)
+library(caret)
+library(CAST)
 library(geosphere)
 library(jsonlite)
 library(rgeos)
 library(rgdal)
 ### additional required packages:
-library(latticeExtra)#
+library(latticeExtra)
 library(foreach)
-library(iterators)#
-library(doParallel)#
-library(parallel)#
+library(iterators)
+library(doParallel)
+library(parallel)
 library(magrittr)
 
 
