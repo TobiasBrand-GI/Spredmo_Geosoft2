@@ -365,31 +365,30 @@ names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12",
 
 #####
 ### Reference data
-combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
 warning(">>> check path !!!")
 warning(">>> this is fake data !!!")
 combined_trainingData <- fake_training_data_for_testing
+# combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
 # View(combined_trainingData)
 
 
-trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
+trainDat <- combined_trainingData #[combined_trainingData$Region!="Muenster",]
 #trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
 # names(trainDat)
 
 
-validationDat <- combined_trainingData[combined_trainingData$Region=="Muenster",]
+# validationDat <- combined_trainingData[combined_trainingData$Region=="Muenster",] # not needed perhaps
 # names(validationDat)
-# head(trainSites)
 
 
 #see unique regions in train set:
-unique(combined_trainingData$Region)
+# unique(combined_trainingData$Region)
 # unique(combined_trainingData$Landnutzungsklasse) # unique Region should
 # View(combined_trainingData)
 
 
 #####
-### Predictors and response
+### 
 # trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
 trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
 # head.matrix(trainids) # trainids is not a list, but matrix
@@ -398,8 +397,10 @@ trainDat <- trainDat[trainids,]
 trainDat <- trainDat[complete.cases(trainDat),]
 
 
+#####
+### Predictors and response
 predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
-response <- "Label" # test
+response <- "Label" # or Landnutzungsklasse  ?
 # head.matrix(response)
 
 
@@ -420,6 +421,24 @@ model
 #####
 ## Model prediction
 prediction <- predict(sentinell_aoi, model)
+
+
+#####
+### validation - not needed (??)
+#validation <- function(x,y=validationDat){
+#  confusionMatrix(factor(x,
+#                         levels=unique(unique(as.character(x),
+#                                              unique(as.character(y$Label))))
+#                         ),
+#                  factor(y$Label,
+#                         unique(unique(as.character(x),
+#                                       unique(as.character(y$Label)))))
+#                  )$overall[1:2]
+#}
+#pred_muenster_valid <- predict(model, validationDat)
+#head(pred_muenster_valid)
+#head(validationDat$Label)
+#validation(pred_muenster_valid)
 
 
 #####
@@ -460,31 +479,26 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   bbox <- st_bbox(Areaofinterest)
   AOI_Polygon<-bbox2SP(n =bbox$ymax, s =bbox$ymin, w = bbox$xmin, e =bbox$xmax ,
                        proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
-
   ##AOA_raster in Polygon umwandeln
   AOA_Polygon <-rasterToPolygons(AOA, fun=function(x){x==1}, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ## passt
   ##AOA von AOI abziehen
   clipped <- AOI_Polygon - AOA_Polygon  
-  
   ##random suggested points to improve AOA
   pts <- spsample(clipped, 100, type = 'random')
- 
   #plot(pts, add = T, col = 'red')
   pts1 <- data.frame(x=pts$x,y=pts$y) 
   coordinates(pts1) <- ~x+y
-  
   #als Liste ausgeben
   Samplepoint_coordinates_list <-coordinates(pts1)
   ##swap latitude and longitude
   Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
   #Samplepointstojson
-  
   Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
   return(Samplepoint_coordinates_as_Json)
 }
 
 
-# calculate_random_points(aoi, AOA_UTM)
+# call calculate_random_points function
 sample_points <- calculate_random_points(aoi, AOA$AOA)
 
 
