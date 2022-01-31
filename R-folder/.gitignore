@@ -1,11 +1,17 @@
 output_*.tif
 output_*.xml
+
 aoa.tif
 di_of_aoa.tif
+
 lulc-prediction.tif
 lulc-prediction.tif.aux.xml
+
 satelite_for_*.tif
 satelite_for_*.xml
+
+final_model.rds
+
 .RData
 .Rhistory
 
