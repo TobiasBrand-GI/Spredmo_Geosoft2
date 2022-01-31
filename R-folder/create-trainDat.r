@@ -46,17 +46,17 @@ message("start processing")
 #####
 ### parameters from plumber APIs:
 # trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Tobias_trainingSites.geojson")   #test_training_polygons.geojson")
 resolution_x <- 100 #300
 # resolution_y <- "auto"
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
-cloud_coverage <- 80
+cloud_coverage <- 60
 path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 
 # thinks for aoi
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_weert_nl.gpkg")
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weert_nl.gpkg")
 path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
 prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
@@ -64,7 +64,7 @@ prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
 
 # training does not work with own training data - so we use this:
-fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/hanna_meyer_data_combined_ll.RDS")
+fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_hanna_meyer_data_combined_ll.RDS")
 
 
 
