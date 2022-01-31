@@ -11,6 +11,7 @@ satelite_for_*.tif
 satelite_for_*.xml
 
 final_model.rds
+merged_trainData.RDS
 
 .RData
 .Rhistory
