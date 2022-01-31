@@ -18,6 +18,7 @@ library(iterators)
 library(doParallel)
 library(parallel)
 library(magrittr)
+library(geosphere)
 # library(Orcs)
 library(jsonlite)
 library(rgeos)
@@ -474,31 +475,48 @@ writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft
 
 
 
+
+
+
 calculate_random_points <- function(Areaofinterest, AOA) {
   #json to bbox
   bbox <- st_bbox(Areaofinterest)
   AOI_Polygon<-bbox2SP(n =bbox$ymax, s =bbox$ymin, w = bbox$xmin, e =bbox$xmax ,
                        proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+
   ##AOA_raster in Polygon umwandeln
   AOA_Polygon <-rasterToPolygons(AOA, fun=function(x){x==1}, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ## passt
   ##AOA von AOI abziehen
   clipped <- AOI_Polygon - AOA_Polygon  
+  
+  ##Anzahl an Punkten skalierend zur größe der AOI
+  get_area_clipped<-areaPolygon(clipped) 
+  quantity_points<-get_area_clipped*0.00001
+  
   ##random suggested points to improve AOA
-  pts <- spsample(clipped, 100, type = 'random')
+  pts <- spsample(clipped, quantity_points, type = 'random')
+ ##plotten
+ #plot(clipped)
+ #plot(pts, add=T,col = 'red')
+ 
+ 
+ ##plotten ende
   #plot(pts, add = T, col = 'red')
   pts1 <- data.frame(x=pts$x,y=pts$y) 
   coordinates(pts1) <- ~x+y
+  
   #als Liste ausgeben
   Samplepoint_coordinates_list <-coordinates(pts1)
   ##swap latitude and longitude
   Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
   #Samplepointstojson
+  
   Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
-  return(Samplepoint_coordinates_as_Json)
+  return(get_area_clipped)
 }
 
 
-# call calculate_random_points function
+# calculate_random_points(aoi, AOA_UTM)
 sample_points <- calculate_random_points(aoi, AOA$AOA)
 
 
