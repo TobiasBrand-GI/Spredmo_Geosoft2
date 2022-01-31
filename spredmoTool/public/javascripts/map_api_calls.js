@@ -6,14 +6,16 @@ function getRResults() {
 }
 
 async function visualize_Results(){
-    try{
-        const res = await getRResults();
-        if(res.success===true){
-            document.getElementById("loading").style.display="none";
+    document.getElementById("loading").style.display="none";
             document.getElementById("mapid").style.display="block";
             document.getElementById("dwButton").disabled=false;
             dmap.invalidateSize();
-            loadTIFF("images/test.tif");
+    loadTIFF("images/aoa.tif");
+    try{
+        const res = await getRResults();
+        if(res.success===true){
+            
+            
         }else{
             alert(res.message);
             window.location.href = "index.html";

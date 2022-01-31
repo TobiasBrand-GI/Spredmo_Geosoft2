@@ -44,6 +44,7 @@ router.get('/results',function(req, res) {
       if(radioButton==="model"){
         if(mime==="rds" || mime==="RDS" || mime==="rdata" || mime==="RDATA"){
           upload("./tmp/"+fileName, "model", mime);
+          
         }else{
           res.json({success:false, message:"File is not an R model file in .rds or .rdata format!"})
         }
@@ -57,7 +58,6 @@ router.get('/results',function(req, res) {
         res.json({success:false, message:"No input mode was selected!"})
       }
     }
-    
   }catch(e){
     res.json({success:false, message:"Error: "+e})
   }
