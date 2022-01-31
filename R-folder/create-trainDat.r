@@ -228,6 +228,10 @@ aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/
 path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
 prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
+# training does not work with own training data - so we use this:
+fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/OpenGeoHub_2021/data/data_combined_ll.RDS")
+
+
 
 
 
@@ -311,9 +315,9 @@ get_combined_trainingData <- function(use_trainingSites) {
 #####
 ### functions for createing and saveing aoi and trainData 
 combined_trainingData <- get_combined_trainingData(trainingSites)
-View(combined_trainingData)
-
+# View(combined_trainingData)
 get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
+
 
 
 
@@ -324,58 +328,63 @@ get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
 #################################################
 #################################################
 
-file_end <- substr(start_day,1, nchar(start_day)-3)
-file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
-sentinell_aoi <- stack(file_path)
-# rename bands
-names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-plot(sentinell_aoi)
-library(mapview)
-mapview(sentinell_aoi)
 
 
-# individual id for every row in data.frame is needed
-combined_trainingData$row_id <- 1:nrow(combined_trainingData) 
-View(combined_trainingData)
 
 
 #####
-# TODO:
-# should not be possible only for Muenster
-# ... for the whole world 
+### prepair raster stack
+file_end <- substr(start_day,1, nchar(start_day)-3)
+file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
+sentinell_aoi <- stack(file_path)
+names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
+# plot(sentinell_aoi)
+# library(mapview)
+# mapview(sentinell_aoi)
+
+
+
+#####
 ### Reference data
+combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
 warning("!!! check path !!!")
-# <- readRDS("C:/Users/.../GitHub/OpenGeoHub_2021/data/....RDS")
-names(combined_trainingData)
-# trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
-trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
-names(trainDat)
-# validationDat <- trainSites[trainSites$Region=="Muenster",]
+combined_trainingData <- fake_training_data_for_testing
+# View(combined_trainingData)
+
+
+
+
+
+
+trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
+#trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
+# names(trainDat)
+
+validationDat <- combined_trainingData[combined_trainingData$Region=="Muenster",]
 # names(validationDat)
 # head(trainSites)
 
 #see unique regions in train set:
-unique(combined_trainingData$Landnutzungsklasse) # unique Region should
-View(combined_trainingData)
+unique(combined_trainingData$Region)
+# unique(combined_trainingData$Landnutzungsklasse) # unique Region should
+# View(combined_trainingData)
 
 
 #####
 ### Predictors and response
-trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
-head.matrix(trainids) # trainids is not a list, but matrix
+# trainids <- createDataPartition(combined_trainingData$row_id,list=FALSE,p=0.15)
+trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
+# head.matrix(trainids) # trainids is not a list, but matrix
 trainDat <- trainDat[trainids,]
-View(trainDat)
-
-# trainDat <- trainDat[complete.cases(trainDat),]  # does not work:
-# ERROR: Error in complete.cases(trainDat) : 
-#    ungültiger 'type' (list) des Argumentes
+# View(trainDat)
 
 
+
+trainDat <- trainDat[complete.cases(trainDat),]
 
 predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
-# response <- "Label" 
-response <- "Landnutzungsklasse"
-head.matrix(response)
+response <- "Label" # test
+# head.matrix(response)
 
 
 #####
@@ -394,7 +403,7 @@ model
 
 #####
 ## Model prediction
-prediction <- predict(sen_ms, model)
+prediction <- predict(sentinell_aoi, model)
 
 
 #####
@@ -405,8 +414,17 @@ prediction <- predict(sen_ms, model)
 # To make a bit faster we use a parallelization.
 cl <- makeCluster(4)
 registerDoParallel(cl)
-AOA <- aoa(sen_ms,model,cl=cl)
+AOA <- aoa(sentinell_aoi, model, cl=cl)
 # plot(AOA)
-message(paste0("Percentage of MÃ¼nster that is within the AOA: ",
+message(paste0("Percentage of Muenster that is within the AOA: ",
                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
 
+
+
+
+#####
+### savings for output
+saveRDS(model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/final_model.rds")
+writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/lulc-prediction.tif", overwrite=TRUE)
+writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/di_of_aoa.tif")
+writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoa.tif")
