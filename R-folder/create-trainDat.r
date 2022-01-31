@@ -44,9 +44,6 @@ message("start processing")
 
 #####
 ### parameters from plumber APIs:
-extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Tobias_trainingSites.geojson")   #test_training_polygons.geojson")
-
 aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weert_nl.gpkg")
 resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
 start_day <- "2021-04-01"
@@ -496,7 +493,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   #Samplepointstojson
   
   Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
-  return(get_area_clipped)
+  return(Samplepoint_coordinates_as_Json)
 }
 
 
@@ -545,8 +542,25 @@ with_extern_model <- function (extern_input_model) {
 }
 
 
-suggested_sample_points_for_plumber <- with_extern_model(extern_model) 
+
+
+#################################################
+# PLUMBER
+#################################################
+
+
+
+# if extern model
+extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+suggested_sample_points_for_plumber <- with_extern_model(extern_model)
+
+# if no model but training sites
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Tobias_trainingSites.geojson")   #test_training_polygons.geojson")
 suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no input
+
+# last saving for Samplepoint_coordinates_as_Json
+write(suggested_sample_points_for_plumber, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/suggested_sample_points.json")
+
 
 #################################################
 #################################################
