@@ -1,4 +1,7 @@
-rm(list=ls())
+#####
+### clear r environment
+try(rm(list = ls()), message("Done: clear r environment"))
+
 library(raster)
 library(sf)
 library(rstac)
@@ -7,7 +10,8 @@ library(sp)
 library(terra)
 library(caret)
 library(CAST)
-#additional required packages:
+
+### additional required packages:
 library(latticeExtra)
 library(foreach)
 library(iterators)
@@ -15,6 +19,52 @@ library(doParallel)
 library(parallel)
 library(magrittr)
 # library(Orcs)
+library(jsonlite)
+library(rgeos)
+library(rgdal)
+
+
+
+
+
+
+#####
+### see how long it takes...
+start_time <- Sys.time()
+message("start processing")
+
+
+
+
+#################################################
+# parameter declaration
+#################################################
+
+
+
+
+#####
+### parameters from plumber APIs:
+# trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
+resolution_x <- 100 #300
+# resolution_y <- "auto"
+start_day <- "2021-04-01"
+end_day <- "2021-04-30"
+cloud_coverage <- 80
+path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
+prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
+
+# thinks for aoi
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
+path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
+prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
+
+# storage place for combined data
+path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
+
+# training does not work with own training data - so we use this:
+fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/hanna_meyer_data_combined_ll.RDS")
 
 
 
@@ -195,42 +245,11 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     # print(head(extr_sp))
     #print(head(extr_raster))
     message("DONE: merge vector and raster")
-    saveRDS(extr,file="C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/merged_trainData.RDS")
+    saveRDS(extr, file= path_for_combined_data)   #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
     message("DONE: save combined Data as RDS")
     warning(">>> check return :) ...")
     return(extr_sp)
 }
-
-
-
-
-#################################################
-# parameter declaration
-#################################################
-
-
-
-
-#####
-### parameters from plumber APIs:
-# trainingSites <- read_sf('C:/Users/49157/Documents/FS_5_WiSe_21-22/M_Geosoft_2/geodata_tests/aoi_jena.gpkg') ##input_test_mit_thomas_1.gpkg')
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/input_test_mit_thomas_1.geojson")   #test_training_polygons.geojson")
-resolution_x <- 100 #300
-# resolution_y <- "auto"
-start_day <- "2021-04-01"
-end_day <- "2021-04-30"
-cloud_coverage <- 80
-path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
-prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
-
-# thinks for aoi
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
-path_for_satelite_for_aoi = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder"
-prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
-
-# training does not work with own training data - so we use this:
-fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/OpenGeoHub_2021/data/data_combined_ll.RDS")
-
 
 
 
@@ -347,22 +366,21 @@ names(sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12",
 #####
 ### Reference data
 combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
-warning("!!! check path !!!")
+warning(">>> check path !!!")
+warning(">>> this is fake data !!!")
 combined_trainingData <- fake_training_data_for_testing
 # View(combined_trainingData)
-
-
-
-
 
 
 trainDat <- combined_trainingData[combined_trainingData$Region!="Muenster",]
 #trainDat <- combined_trainingData[combined_trainingData$Landnutzungsklasse!="Null",] # just temporary
 # names(trainDat)
 
+
 validationDat <- combined_trainingData[combined_trainingData$Region=="Muenster",]
 # names(validationDat)
 # head(trainSites)
+
 
 #see unique regions in train set:
 unique(combined_trainingData$Region)
@@ -377,10 +395,8 @@ trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
 # head.matrix(trainids) # trainids is not a list, but matrix
 trainDat <- trainDat[trainids,]
 # View(trainDat)
-
-
-
 trainDat <- trainDat[complete.cases(trainDat),]
+
 
 predictors <- head(names(sentinell_aoi), -1) # without the "SCL"-band 
 response <- "Label" # test
@@ -420,11 +436,31 @@ message(paste0("Percentage of Muenster that is within the AOA: ",
                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
 
 
+#####
+### savings for output
+saveRDS(model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.rds")
+writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
+writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
+writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
+
+
+
+
+#################################################
+#################################################
+# end of process
+#################################################
+#################################################
+
+
 
 
 #####
-### savings for output
-saveRDS(model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/final_model.rds")
-writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/lulc-prediction.tif", overwrite=TRUE)
-writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/di_of_aoa.tif")
-writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoa.tif")
+### printing processing time
+end_time <- Sys.time()
+time_differnece <- paste("total processing time: ",
+                         round(100000 * (end_time - start_time)) / 100000, 
+                         " Minutes")
+print(time_differnece)
+
+
