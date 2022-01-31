@@ -6,8 +6,13 @@ const scp = require('scp')
 const fs = require('fs');
 const { default: Client } = require('node-scp');
 const { send } = require('process');
+const gjv = require("geojson-validation");
 
-var fileName;
+let fileNames = new Array();
+let serverFileNames = new Array();
+let ui_Body;
+let fileName;
+
 var storage = multer.diskStorage({
   destination: function (request, file, callback) {
       callback(null, './tmp');
@@ -20,25 +25,48 @@ var storage = multer.diskStorage({
 
 const uploadDest = multer({storage:storage})
 router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
-  let radioButton = req.body.modelInput;
-  if(radioButton==="model"){
-    upload("./tmp/"+fileName)
-  }else if(radioButton==="train"){
-    console.log("train")
-  }else{
-    console.log("No mode selected")
-  }
-  try{
-  }catch(e){
-    console.log(e)
-  }
-  
+  ui_Body=req.body; 
+  fileNames.push(fileName);
   res.redirect("/download.html")
 })
 
-router.post('/results',function(req, res) {
+router.get('/results',function(req, res) {
+  let radioButton = ui_Body.modelInput;
+  let mime = fileName.split(".")[1];
+  try{
+    if(gjv.valid(JSON.parse(ui_Body.geoJSONInput))===false){
+      res.json({success:false, message:"Your area of interest GeoJSON Code was invalid!"})
+    }else if(ui_Body.startDay>ui_Body.endDay){
+      res.json({success:false, message:"The end day must be more recent then the start day!"})
+    }else if(ui_Body.startDay<Date.now() || ui_Body.endDay<Date.now()){
+      res.json({success:false, message:"Chosen dates cannot be in the future!"})
+    }else{
+      if(radioButton==="model"){
+        if(mime==="rds" || mime==="RDS" || mime==="rdata" || mime==="RDATA"){
+          upload("./tmp/"+fileName, "model", mime);
+        }else{
+          res.json({success:false, message:"File is not an R model file in .rds or .rdata format!"})
+        }
+      }else if(radioButton==="train"){
+        if(mime==="geojson" || mime==="GEOJSON" || mime==="gpkg" || mime==="GPKG"){
+          upload("./tmp/"+fileName, "train", mime);
+        }else{
+          res.json({success:false, message:"File is not an spatial data file in .geojson or .gpkg format!"})
+        }
+      }else{
+        res.json({success:false, message:"No input mode was selected!"})
+      }
+    }
+    
+  }catch(e){
+    res.json({success:false, message:"Error: "+e})
+  }
 })
   
+router.get('/wrongInput',function(req, res) {
+  res.redirect("/index.html")
+})
+
 async function download(){
   try{
     const client =  await Client({
@@ -47,7 +75,7 @@ async function download(){
     username: 'ubuntu', //username to authenticate
     privateKey: fs.readFileSync('G:/GitHubRepositories/Spredmo_Geosoft2/spredmoTool/public/images/geosoft22021.pem'),
   }).then(client => {
-    client.downloadFile('/tmp/aoa.tif', 'public/images/test.tif')
+    client.downloadFile('/tmpextern/aoa.tif', 'public/images/test.tif')
       .then(response => {
         client.close() // remember to close connection after you finish
       })
@@ -58,7 +86,7 @@ async function download(){
   }
 }
 
-async function upload(localPath, newFileName){
+async function upload(localPath, file, type){
   try {
     const client = await Client({
       host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
@@ -66,7 +94,10 @@ async function upload(localPath, newFileName){
       username: 'ubuntu', //username to authenticate
       privateKey: fs.readFileSync('G:/GitHubRepositories/Spredmo_Geosoft2/spredmoTool/public/images/geosoft22021.pem'),
     })
-    await client.uploadFile(localPath, '/tmp/'+newFileName)
+    let uniqueStamp = createFileNames(Date.now());
+    let newFileName = file+"_"+uniqueStamp+"."+type;
+    serverFileNames.push(newFileName);
+    await client.uploadFile(localPath, '/tmpextern/'+newFileName);
     // you can perform upload multiple times
     client.close() // remember to close connection after you finish
 
@@ -76,7 +107,6 @@ async function upload(localPath, newFileName){
   } catch (e) {
     console.log(e)
   }
-
 }
 
 /**
@@ -98,4 +128,5 @@ async function upload(localPath, newFileName){
   console.log(converted)
   return converted;
 }
+
 module.exports = router;

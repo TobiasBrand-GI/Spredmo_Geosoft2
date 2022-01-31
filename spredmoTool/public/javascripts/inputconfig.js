@@ -8,9 +8,6 @@ displayAmountSlider(0);
  */
 function changeInputHTML(choice, status){
     let div=document.getElementById("modelInDiv");
-    if(status==1){
-        div.innerHTML="";
-    }
     if(choice=="model"){
         createFileUpload("ihr bereits trainiertes Klassifizierungsmodell als .rds- oder .rdata-File", ".rds", ".rdata");
     }
@@ -25,7 +22,7 @@ function changeInputHTML(choice, status){
  * @param {*} maindiv html div-container to append the file upload on
  */
 function createFileUpload(placeholder, type1, type2){
-    let f= document.getElementById("modelFile")
+    let f = document.getElementById("modelFile")
     f.setAttribute("accept", type1+","+type2)
 
     let h=document.getElementById("fileHeader")

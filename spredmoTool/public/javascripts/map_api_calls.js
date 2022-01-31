@@ -1,6 +1,6 @@
 function getRResults() {
-        $.ajax({
-        url: "/plumber/geotiff",
+        return $.ajax({
+        url: "/plumber/results",
         method: "GET",
         })
 }
@@ -8,12 +8,16 @@ function getRResults() {
 async function visualize_Results(){
     try{
         const res = await getRResults();
-        console.log(res)
-        document.getElementById("loading").style.display="none";
-        document.getElementById("mapid").style.display="block";
-        document.getElementById("dwButton").disabled=false;
-        dmap.invalidateSize();
-        loadTIFF("images/test.tif");
+        if(res.success===true){
+            document.getElementById("loading").style.display="none";
+            document.getElementById("mapid").style.display="block";
+            document.getElementById("dwButton").disabled=false;
+            dmap.invalidateSize();
+            loadTIFF("images/test.tif");
+        }else{
+            alert(res.message);
+            window.location.href = "index.html";
+        }
     }catch(err){
         console.log(err)
     }
@@ -26,7 +30,7 @@ function getDownload(url, fileType, fileName) {
     .then(blob => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    let currTime= convertTimes(Date.now())
+    let currTime= createFileNames(Date.now())
     a.style.display = 'none';
     a.href = url;
     a.download = fileName+'_'+currTime+'.'+fileType;

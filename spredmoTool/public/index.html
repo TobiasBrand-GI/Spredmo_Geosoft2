@@ -51,14 +51,14 @@
                     <input type="radio" class="btn-check radio-btn-green" id="radioTrain" name="modelInput" value="train" onclick="changeInputHTML('data',1)" autocomplete="off"/>
                     <label class="btn btn-outline-dark" for="radioTrain" >Trainingsdaten für ein neues Modell</label>
                 </div> 
-                <div id="modelInDiv" class="row">
+                <div id="modelInDiv" class="row p-3">
                     <h5 id="fileHeader"></h5>
-                    <input type="file" name="modelFile" class="form-control form-control-md rounded" id="modelFile" required="true"/>
+                    <input type="file" name="modelFile" class="form-control form-control-md" id="modelFile" required="true"/>
                 </div></br>
                 <div id="aoiJSON" class="row">
                     <h5>Wählen Sie die gewünschte Area of Interest auf der Karte aus oder fügen Sie einen GeoJSON Code ein</h5>
                     <div class="input-group">
-                        <input type="text" class="form-control form-control-md" id="geoJSONInput" placeholder="JSON-Code" required/>
+                        <input type="text" class="form-control form-control-md" id="geoJSONInput" name="geoJSONInput" placeholder="JSON-Code" required/>
                         <input type="button" class="btn btn-green input-group-append" value="Zur Karte hintzufügen" onclick="addJSONtoMap()"></input>
                     </div>
                 </div></br>
@@ -76,11 +76,13 @@
                 <div id="standardParams" class="row">
                     <h5>Weitere Einstellungen</h5>
                     <div class="col">
-                        <label for="resolution">Auflösung der Data-Cubes in Meter pro Pixel:</label>
+                        <label for="resolution">Auflösung der Ergebnisse:</label>
                         <select name="resolution" class="form-select" id="resolution" required>
-                            <option value="res200">200x200</option>
-                            <option value="res400">400x400</option>
-                            <option value="res800">800x800</option>
+                            <option value="100">Sehr Niedrig</option>
+                            <option value="200">Niedrig</option>
+                            <option value="300">Mittel</option>
+                            <option value="400">Hoch</option>
+                            <option value="500">Sehr Hoch</option>
                         </select></br>
                     </div>
                     <div class="col">
