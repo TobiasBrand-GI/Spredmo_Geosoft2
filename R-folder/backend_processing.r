@@ -34,38 +34,6 @@ message("start processing")
 
 
 
-#################################################
-# parameter declaration
-#################################################
-
-
-
-
-#####
-### parameters from plumber APIs:
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weissenfels.geojson")
-resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
-start_day <- "2021-04-01"
-end_day <- "2021-04-30"
-cloud_coverage <- 60
-response_for_lulc <- "Label" # oder: "Landnutzungsklasse"
-
-# thinks for trainingSites
-path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
-prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
-
-# thinks for aoi
-path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
-prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
-
-# storage place for combined data
-path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
-
-# training does not work with own training data - so we use this:
-fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_hanna_meyer_data_combined_ll.RDS")
-prepaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
-
-
 
 #################################################
 # function implementation
@@ -237,11 +205,11 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     # print(head(extr))
     input_trainingSites$Poly_ID <- 1:nrow(input_trainingSites) 
     # extr_terra <- terra::merge(input_trainingSites, extr) #, by.x="ID", by.y="ID")
-    # print(head(extr_terra))
+    # View(extr)
     extr_sp <- sp::merge(input_trainingSites, extr, all.x=TRUE, by.x="Poly_ID", by.y="ID")
                          #by = intersect(names(input_trainingSites), names(extr)), by.input_trainingSites = by, by.extr = by)
     # print(head(extr_sp))
-    #print(head(extr_raster))
+    # View(extr_sp)
     message("DONE: merge vector and raster")
     saveRDS(extr, file= path_for_combined_data)   #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
     message("DONE: save combined Data as RDS")
@@ -258,13 +226,6 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
 
 
 
-
-#####
-### this function calls are always needed
-fitting_epsg_as_string <- paste('EPSG:4326') # find_right_crs(use_trainingSites) # function not needed any more
-# fitting_epsg_as_string
-image_mask_for_data_cube <- set_image_mask_for_data_cube()
-set_threads()
 
 
 #####
@@ -344,7 +305,7 @@ get_raster_stack <- function(){
   # filter geometry of aoi in raster stack
   seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
   for (i in seq_for_loop) {
-    print(paste("band iteration ", i))
+    # print(paste("band iteration ", i))
     out_sentinell_aoi[[i]] <- mask(out_sentinell_aoi[[i]], aoi)
   }
   message("DONE: filter geometry of aoi")
@@ -357,12 +318,14 @@ get_raster_stack <- function(){
 ### generate own model
 generate_own_model <- function(input_sentinell_aoi, input_com_trainingData){
   ### Reference data
-  input_com_trainingData <- fake_training_data_for_testing
-  # input_com_trainingData <- prepaired_trainingDat
+  # input_com_trainingData <- fake_training_data_for_testing
+  input_com_trainingData # <- prepaired_trainingDat
   # input_com_trainingData$row_id <- 1:nrow(input_com_trainingData) # individual id for every row in data.frame is needed
   View(input_com_trainingData)
   trainDat <- input_com_trainingData
-  trainids <- createDataPartition(input_com_trainingData$ID,list=FALSE,p=0.15)
+  trainDat <- st_set_geometry(trainDat, NULL)
+  View(trainDat)
+  trainids <- createDataPartition(input_com_trainingData$id,list=FALSE,p=0.15)
   # head.matrix(trainids) # trainids is not a list, but matrix
   trainDat <- trainDat[trainids,]
   # View(trainDat)
@@ -370,14 +333,21 @@ generate_own_model <- function(input_sentinell_aoi, input_com_trainingData){
   #####
   ### Predictors and response
   predictors <- head(names(input_sentinell_aoi), -1) # without the "SCL"-band 
-  response <- response_for_lulc # "Label" # or "Landnutzungsklasse"  ?
-  # head.matrix(response)
+  # response <- response_for_lulc # "Label" # or "Landnutzungsklasse"  ?
+  # print(head.matrix(response))
+  # View(trainDat)
+  # print(trainDat[0])
+  # print(trainDat[1])
+  # print(trainDat[2])
+  print(names(trainDat[3]))
+  
+  
   #####
   ## Model training and validation
   # train the model
   ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
   model <- train(trainDat[,predictors],
-                 trainDat[,response],
+                 trainDat$Landnutzungsklasse, # trainDat[trainDat[3]], # trainDat$Class, # instead of response
                  method="rf",
                  metric="Kappa",
                  trControl=ctrl_default,
@@ -436,10 +406,13 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   #####
   ### savings for output
   # save_outputs <- function(input_own_model){
-  file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+  # try(file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS"))
   saveRDS(input_model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif"))
   writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
+  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif")
   writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
+  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif")
   writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
   message("DONE: save_outputs: model, prediction and AOA")
   
@@ -512,6 +485,8 @@ calculate_random_points <- function(Areaofinterest, AOA) {
 
 
 without_model_but_trainingSites <- function () {
+  # this function(s) should calles first
+  # always_function()
   # createing and savnig trainData 
   get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
   # if no model input own training data gets generated
@@ -532,6 +507,8 @@ without_model_but_trainingSites <- function () {
 
 
 with_extern_model <- function (extern_input_model) {
+  # this function(s) should calles first
+  # always_function()
   # createing and savnig trainData 
   get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
   # get sentinell for aoi
@@ -549,18 +526,72 @@ with_extern_model <- function (extern_input_model) {
 
 
 
+
+#################################################
 #################################################
 # PLUMBER
+#################################################
+#################################################
+
+
+
+#####
+### make space for new results
+try(unlink("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files", recursive = TRUE))
+
+
+
+#################################################
+# parameter declaration
+#################################################
+
+
+#####
+### parameters from plumber APIs:
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weissenfels.geojson")
+resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
+start_day <- "2021-04-01"
+end_day <- "2021-04-30"
+cloud_coverage <- 60
+response_for_lulc <- "Landnutzungsklasse" # oder: "Label"
+
+# fix and final
+fitting_epsg_as_string <- paste('EPSG:4326')
+
+# thinks for trainingSites
+path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
+prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
+
+# thinks for aoi
+path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
+prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
+
+# storage place for combined data
+path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
+
+# training does not work with own training data - so we use this:
+# fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_hanna_meyer_data_combined_ll.RDS")
+# prepaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
+
+# this functions are always needed:
+image_mask_for_data_cube <- set_image_mask_for_data_cube()
+set_threads()
+
+
+
+
+#################################################
+# final functions called by plumber
 #################################################
 
 
 
 # if extern model
-extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_final_model.RDS")
 suggested_sample_points_for_plumber <- with_extern_model(extern_model)
 
 # if no model but training sites
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Tobias_trainingSites.geojson")   #test_training_polygons.geojson")
+trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Gustav_trainingSites.geojson")
 suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no input
 
 # last saving for Samplepoint_coordinates_as_Json
