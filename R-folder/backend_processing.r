@@ -43,7 +43,7 @@ message("start processing")
 
 #####
 ### parameters from plumber APIs:
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weert_nl.gpkg")
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weissenfels.geojson")
 resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
@@ -343,6 +343,13 @@ get_raster_stack <- function(){
   # plot(sentinell_aoi)
   # library(mapview)
   # mapview(sentinell_aoi)
+  # filter geometry of aoi in raster stack
+  seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
+  for (i in seq_for_loop) {
+    print("band iteration ", i)
+    # sen_ms$B02 <- mask(sen_ms$B02, input_shape)
+    out_sentinell_aoi[[i]] <- mask(out_sentinell_aoi[[i]], aoi)
+  }
   message("DONE: get_raster_stack")
   return(out_sentinell_aoi)
 }
