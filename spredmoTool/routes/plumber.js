@@ -59,13 +59,29 @@ router.get('/results',function(req, res) {
     }
     // Else case if validation was successfull
     else{
+      let coordinates = ui_Body.geoJSONInput;
+      //let aoiFileName = aoi
+      fs.writeFileSync("./tmp/aoi.geojson", coordinates)
       // Check if mode for a trained model was selected
       if(radioButton==="model"){
         // Check for correct MIME types
         if(mime==="rds" || mime==="RDS" || mime==="rdata" || mime==="RDATA"){
           // upload moddel file to AWS
-          upload("./tmp/"+fileName, "model", mime);
-          
+          // upload("./tmp/"+fileName, "model", "RDS", "./tmp/aoi.geojson");
+          // axios.post('http://127.0.0.1:6516/aoamodel', {
+          //   "cloud_cover": 60,
+          //   "start_day": "2021-04-01",
+          //   "end_day": "2021-04-30",
+          //   "resolution": 100,
+          //   "path_model": "/tmp/model.RDS",
+          //   "aoi": "/tmp/aoi.geojson"
+          // })
+          // .then(response => {
+          //   console.log(response.data)
+          // })
+          // .catch(error => {
+          //   console.log(error);
+          // })
         }else{
           // if not correct, send json with error message
           res.json({success:false, message:"File is not an R model file in .rds or .rdata format!"})
@@ -75,7 +91,7 @@ router.get('/results',function(req, res) {
         // Check for correct MIME types
         if(mime==="geojson" || mime==="GEOJSON" || mime==="gpkg" || mime==="GPKG"){
           // Upload train data to AWS
-          upload("./tmp/"+fileName, "train", mime);
+          upload("./tmp/"+fileName, "train", mime, "./tmp/aoi.geojson");
         }else{
           // if not correct, send json with error message
           res.json({success:false, message:"File is not an spatial data file in .geojson or .gpkg format!"})
@@ -119,7 +135,7 @@ async function download(){
  * @param {String} file Short prefix (model, train) for later name creation
  * @param {String} type MIME type of the file which should be uploaded
  */
-async function upload(localPath, file, type){
+async function upload(localPath, file, type, jsonPath){
   try {
     // Connection to AWS
     const client = await Client({
@@ -129,19 +145,24 @@ async function upload(localPath, file, type){
       privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
     })
     // Create uniquie file name
-    let uniqueStamp = createFileNames(Date.now());
-    let newFileName = file+"_"+uniqueStamp+"."+type;
+    // let uniqueStamp = createFileNames(Date.now());
+    // let newFileName = file+"_"+uniqueStamp+"."+type;
+    // let newJSONName = 
     // Save file name for the Plumber code
-    serverFileNames.push(newFileName);
+    // serverFileNames.push(newFileName1);
     // upload file
-    await client.uploadFile(localPath, '/tmpextern/'+newFileName);
+    await client.uploadFile(localPath, "/tmpextern/"+file+"."+type); // , '/tmp/'+newFileName
+    await client.uploadFile(jsonPath, '/tmpextern/aoi.geojson');
     client.close()
     // Delete copied file locally to free memory
     fs.unlink(localPath,(err)=>{
       console.log(err)
     })
+    fs.unlink(jsonPath,(err)=>{
+      console.log(err)
+    })
   } catch (e) {
-    console.log(e)
+      console.log(e)
   }
 }
 
