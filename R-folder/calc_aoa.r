@@ -32,7 +32,7 @@ message("start processing")
 ### load shape as gpkg and transform crs
 warning("!!! check path !!!")
 # input_shape <- read_sf('C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/umriss_muenster.gpkg')
-input_shape <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/aoi_jena.geojson")
+input_shape <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_jena.geojson")
 st_crs(input_shape)
 plot(input_shape)
 # input_shape_transformed <- st_transform(input_shape, crs="EPSG:32631")     #  "EPSG:4236")
@@ -53,7 +53,7 @@ message("DONE: st_transform() for '<input_shape>.gpkg' ")
 #####
 ### prepair bbox
 # calculate_bbox <- function(input_sites) {
-bbox <- st_bbox(input_shape_transformed)
+bbox <- st_bbox(input_shape)
 st_as_sfc(bbox) %>%
 st_transform("EPSG:4326") %>%
 st_bbox() -> bbox_wgs84
@@ -62,6 +62,7 @@ st_bbox() -> bbox_wgs84
 
 #bbox_wgs84 <- calculate_bbox(input_shape_transformed)
 message("DONE: calculate_bbox()")
+
 
 
 #####
@@ -75,7 +76,7 @@ items = s %>%
               datetime = "2018-06-01/2018-06-30",
               limit = 500) %>%
   post_request()
-# items
+items
 message("DONE: stac_search()")
 
 
@@ -89,7 +90,7 @@ message("DONE: stac_search()")
 #####
 ### get right crs
 targetSystem <- toString(items$features[[1]]$properties$`proj:epsg`)
-targetString <- paste('EPSG:',targetSystem)
+targetString <- paste('EPSG:4326') # ,targetSystem)
 input_sites <- st_transform(input_shape, crs=targetString)
 message("DONE: get right crs")
 
@@ -111,18 +112,18 @@ message("DONE: stac_image_collection()")
 #####
 ### generate data cube
 cube_view_for_data_cube <- cube_view(srs="EPSG:4326", # srs = targetString,   # "EPSG:4326",
-                                   dx = 20, #20,
-                                   dy = 20, #20,
+                                   nx = 50, #20,
+                                   ny = 50, #20,
                                    dt = "P30D",
                                    aggregation = "median",
                                    resampling = "average",
                                    extent = list(t0 = "2018-06-01",
                                                  t1 = "2018-06-30",
-                                                 left = bbox[1]-1000, 
-                                                 right = bbox[2]+1000,
-                                                 top = bbox[3] + 1000, 
-                                                 bottom = bbox[4]-1000))
-# cube_view_input_shape
+                                                 left = bbox[1]-0.1, 
+                                                 right = bbox[3]+0.1000,
+                                                 top = bbox[4] + 0.1000, 
+                                                 bottom = bbox[2]-0.1000))
+cube_view_for_data_cube
 message("DONE: cube_view()")
 
 
@@ -146,7 +147,7 @@ message("DO NOT WORRY :)")
 if (!is.null(input_sites$geometry)){
   temp <- input_sites$geometry
 } else  temp <- input_sites$geom
-satelite_cube <- raster_cube(s2_collection, cube_view_for_data_cube, s2_mask) %>%
+satelite_cube <- raster_cube(s2_collection, cube_view_for_data_cube, s2_mask) # %>%
   # select bands B, G, R, NIR, SWIR
   #  select_bands(c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")) %>% 
   # NDVI - Normalized Difference Vegetation Index
@@ -155,7 +156,7 @@ satelite_cube <- raster_cube(s2_collection, cube_view_for_data_cube, s2_mask) %>
   #  apply_pixel("(B11+B04)-(B08+B02)/(B11+B04)+(B08+B02)", "BSI", keep_bands = TRUE) %>% 
   # Built-up Area Extraction Index
   #  apply_pixel("(B04 + 0.3)/(B03+B11)", "BAEI", keep_bands = TRUE) %>% 
-  filter_geom(temp, srs = "EPSG:4326")#targetString)
+  # filter_geom(temp, srs = "EPSG:4326")#targetString)
   # plot(rgb = 3:1, zlim=c(0,1500)) %>%        # write_tif() does not work when using plot() here 
   # satelite_cube_4326 <- cube_view(satelite_cube, srs = "EPSG:4326")
 message("DONE: raster_cube()")
@@ -185,12 +186,28 @@ message("DONE: save as geoTiff")
 #####
 ### Raster data (predictor variables)
 warning("!!! check path !!!")
-sen_ms <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/output_2018-06-01.tif")
+sen_ms <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_aoi__2021-04.tif")
 # rename bands
 names(sen_ms) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-# plot(sen_ms)
+plot(sen_ms)
 plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
 message("DONE: load as RasterStack")
+
+# filter geometry of aoi in raster stack
+seq_for_loop <- 1:length(names(sen_ms)) # with the last band, it's SCL
+for (i in seq_for_loop) {
+  print(i)
+  if (i<4) {
+       raster_name <- paste('sen_ms$B0', i, sep = "")
+       print(raster_name)
+  } else {
+    raster_name <- paste("sen_ms$B11", sep = "")
+  }
+  # sen_ms$B02 <- mask(sen_ms$B02, input_shape)
+  sen_ms[[i]] <- mask(sen_ms[[i]], input_shape)
+}
+plotRGB(sen_ms,stretch="lin",r=3,g=2,b=1)
+plot(sen_ms)
 
 
 #####
