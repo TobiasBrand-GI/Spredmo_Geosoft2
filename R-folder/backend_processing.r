@@ -23,36 +23,15 @@ library(parallel)
 library(magrittr)
 
 
-
-
-
 #####
 ### see how long it takes...
 start_time <- Sys.time()
 message("start processing")
 
 
-
-
-
 #################################################
 # function implementation
 #################################################
-
-
-
-
-#####
-### get right crs - function not needed any more
-# find_right_crs <- function(input_area) {
-  # longitude <- st_bbox(input_area)[1]
-  # utm_zone <- (floor((longitude + 180)/6) %% 60) + 1
-  # targetString <- paste('EPSG:326',utm_zone, sep = "")
-  # it only works with following EPSG-code
-  # targetString <- paste('EPSG:4326')
-  # message("DONE: get right crs")
-  # return(targetString)
-# }
 
 
 #####
@@ -88,7 +67,6 @@ get_sentinelDat_form_stac <- function(input_bbox, in_t0, in_t1) {
 # reference for meaning of bands: https://gdal.org/drivers/raster/sentinel2.html
 create_filtered_image_collection <- function(input_items, intpu_cloud_coverage) {
     assets <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    # assets <- c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")
     s2_collection <- stac_image_collection(input_items$features,
                                     asset_names = assets, 
                                     property_filter = function(x) {
@@ -140,18 +118,12 @@ set_threads <- function() {
 #####
 ### make raster cube
 generate_raster_cube <- function(input_area, input_collection, input_cube_view, input_image_mask, input_epsg) {
-  #print(input_area$geometry)
-  #print(input_collection)
-  #print(input_cube_view$space$srs)
-  #print(input_image_mask)
-  #print(input_epsg)
-    # library(dplyr) # needed for '%>%'
-    if (!is.null(input_area$geometry)){
-        temp <- input_area$geometry
-    } else  temp <- input_area$geom
-    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) #%>%
-    # print(satelite_cube)
-    # filter_geom(satelite_cube, temp, srs = input_epsg)
+
+    # if (!is.null(input_area$geometry)) {
+    #     temp <- input_area$geometry
+    # } else  temp <- input_area$geom
+    satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask)
+    # filter_geom(satelite_cube, temp, srs = input_epsg)      # not working until 2022-01-27 - zoom-meeting with Marius Appel
     message("DONE: raster_cube()")
     return(satelite_cube)
 }
@@ -165,7 +137,7 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
     message("this function takes some time:")
     write_tif(input_cube,
             dir = input_storage_path,
-            prefix = input_prefix, # basename(tempfile(pattern = input_prefix)),
+            prefix = input_prefix,
             overviews = FALSE,
             COG = TRUE,
             rsmpl_overview = "nearest",
@@ -180,12 +152,9 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
 ### Raster data (predictor variables)
 load_predictors_and_rename_bands <- function() {
     warning(">>> check path !!!")
-    # sen_ms <- stack(paste(input_storage_path, input_prefix))
     sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
     # rename bands
     names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    # names(sentinel)
-    # plotRGB(sentinel,stretch="lin",r=3,g=2,b=1)
     message("DONE: load as RasterStack")
     return(sentinel)
 }
@@ -197,21 +166,13 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     spatVector <- terra::vect(input_trainingSites)
     spatRaster <- terra::rast(input_predictors_stack, subds=0, opts=NULL)
     message("DONE: transform to SpatRaster and SpatVector")
-    
     extr <- terra::extract(spatRaster, spatVector)     # function signatur like in terra-package
-    # extr <- raster::extract(spatRaster, spatVector, df=TRUE) # extract from raster works only with spatRaster and spatVector
     # rename bands
     names(extr) <- c("ID","B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-    # print(head(extr))
     input_trainingSites$Poly_ID <- 1:nrow(input_trainingSites) 
-    # extr_terra <- terra::merge(input_trainingSites, extr) #, by.x="ID", by.y="ID")
-    # View(extr)
     extr_sp <- sp::merge(input_trainingSites, extr, all.x=TRUE, by.x="Poly_ID", by.y="ID")
-                         #by = intersect(names(input_trainingSites), names(extr)), by.input_trainingSites = by, by.extr = by)
-    # print(head(extr_sp))
-    # View(extr_sp)
     message("DONE: merge vector and raster")
-    saveRDS(extr, file= path_for_combined_data)   #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
+    saveRDS(extr, file= path_for_combined_data)
     message("DONE: save combined Data as RDS")
     warning(">>> check return :) ...")
     return(extr_sp)
@@ -223,8 +184,6 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
 #################################################
 # function calls
 #################################################
-
-
 
 
 
@@ -264,18 +223,13 @@ get_combined_trainingData <- function(use_trainingSites) {
     cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution_x, start_day, end_day, bbox_wgs84)
     # cube_view_for_trainingSites
     cube_for_trainingSites <- generate_raster_cube(use_trainingSites, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
-    # cube_for_trainingSites
-    # plot(cube_for_trainingSites, zlim=c(0, 1800))
+    
     # save as geotif
     save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
     # combine satelite with classified polygones
     predictors_stack <- load_predictors_and_rename_bands()
-    # predictors_stack
-    # trainingDat_terra <- combine_sentinel_with_trainingSites(predictors_stack, use_trainingSites)
     trainingDat_sp <- combine_sentinel_with_trainingSites(predictors_stack, use_trainingSites)
-    # head(trainingDat)
-    # View(trainingDat_sp)
-    # View(trainingDat_terra)
+
     message("DONE: get_combined_trainingData")
     return(trainingDat_sp)
 }
@@ -288,7 +242,6 @@ get_combined_trainingData <- function(use_trainingSites) {
 # training, prediction, aoa, sample_points
 #################################################
 #################################################
-
 
 
 
@@ -318,27 +271,17 @@ get_raster_stack <- function(){
 ### generate own model
 generate_own_model <- function(input_sentinell_aoi, input_com_trainingData){
   ### Reference data
-  # input_com_trainingData <- fake_training_data_for_testing
-  input_com_trainingData # <- prepaired_trainingDat
-  # input_com_trainingData$row_id <- 1:nrow(input_com_trainingData) # individual id for every row in data.frame is needed
-  View(input_com_trainingData)
   trainDat <- input_com_trainingData
   trainDat <- st_set_geometry(trainDat, NULL)
-  View(trainDat)
   trainids <- createDataPartition(input_com_trainingData$id,list=FALSE,p=0.15)
   # head.matrix(trainids) # trainids is not a list, but matrix
   trainDat <- trainDat[trainids,]
-  # View(trainDat)
   trainDat <- trainDat[complete.cases(trainDat),]
   #####
   ### Predictors and response
   predictors <- head(names(input_sentinell_aoi), -1) # without the "SCL"-band 
   # response <- response_for_lulc # "Label" # or "Landnutzungsklasse"  ?
-  # print(head.matrix(response))
-  # View(trainDat)
-  # print(trainDat[0])
-  # print(trainDat[1])
-  # print(trainDat[2])
+
   print(names(trainDat[3]))
   
   
@@ -359,9 +302,6 @@ generate_own_model <- function(input_sentinell_aoi, input_com_trainingData){
 }
 
 
-
-
-
 #####
 ### prediction_and_aoa
 prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
@@ -370,24 +310,7 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   prediction <- predict(input_sentinell_aoi, input_model)
   message("DONE: prediction")
   
-  #####
-  ### validation - not needed (??)
-  #validation <- function(x,y=validationDat){
-  #  confusionMatrix(factor(x,
-  #                         levels=unique(unique(as.character(x),
-  #                                              unique(as.character(y$Label))))
-  #                         ),
-  #                  factor(y$Label,
-  #                         unique(unique(as.character(x),
-  #                                       unique(as.character(y$Label)))))
-  #                  )$overall[1:2]
-  #}
-  #pred_muenster_valid <- predict(model, validationDat)
-  #head(pred_muenster_valid)
-  #head(validationDat$Label)
-  #validation(pred_muenster_valid)
-  
-  
+
   #####
   ## Area of Applicability
   # needed packages for following code are:
@@ -397,22 +320,15 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   cl <- makeCluster(4)
   registerDoParallel(cl)
   AOA <- aoa(input_sentinell_aoi, input_model, cl=cl)
-  # plot(AOA)
   # message(paste0("Percentage of Muenster that is within the AOA: ",
   #                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
   message("DONE: aoa")
-  #}
 
   #####
   ### savings for output
-  # save_outputs <- function(input_own_model){
-  # try(file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS"))
   saveRDS(input_model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
-  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif"))
   writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
-  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif")
   writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
-  # file.remove("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif")
   writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
   message("DONE: save_outputs: model, prediction and AOA")
   
@@ -425,14 +341,13 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
 }
 
 
+
+
 #################################################
 #################################################
 # calculate_random_points
 #################################################
 #################################################
-
-
-
 
 
 
@@ -454,13 +369,6 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   
   ##random suggested points to improve AOA
   pts <- spsample(clipped, quantity_points, type = 'random')
- ##plotten
- #plot(clipped)
- #plot(pts, add=T,col = 'red')
- 
- 
- ##plotten ende
-  #plot(pts, add = T, col = 'red')
   pts1 <- data.frame(x=pts$x,y=pts$y) 
   coordinates(pts1) <- ~x+y
   
@@ -485,8 +393,6 @@ calculate_random_points <- function(Areaofinterest, AOA) {
 
 
 without_model_but_trainingSites <- function () {
-  # this function(s) should calles first
-  # always_function()
   # createing and savnig trainData 
   get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
   # if no model input own training data gets generated
@@ -497,28 +403,18 @@ without_model_but_trainingSites <- function () {
   own_model <- generate_own_model(sentinell_aoi, combined_trainingData)
   # prediction and aoa
   suggested_sample_points <- prediction_and_aoa(own_model, sentinell_aoi) # no return
-  # save_outputs
-  # save_outputs(own_model) # no return
-  # calculate_random_points(aoi, AOA_UTM)
-  # sample_points <- calculate_random_points(aoi, AOA$AOA)
   message("DONE: without_model_but_trainingSites")
   return(suggested_sample_points)
 }
 
 
 with_extern_model <- function (extern_input_model) {
-  # this function(s) should calles first
-  # always_function()
   # createing and savnig trainData 
   get_sentinelDat_for_aoi(aoi) # no return - just save result as GeoTiff
   # get sentinell for aoi
   sentinell_aoi <- get_raster_stack() 
   # prediction and aoa
   suggested_sample_points <- prediction_and_aoa(extern_input_model, sentinell_aoi) # no return
-  # save_outputs
-  # save_outputs(extern_input_model) # no return
-  # calculate_random_points(aoi, AOA_UTM)
-  # sample_points <- calculate_random_points(aoi, AOA$AOA)
   message("DONE: with_extern_model")
   return(suggested_sample_points)
 }
@@ -553,7 +449,7 @@ resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
 cloud_coverage <- 60
-response_for_lulc <- "Landnutzungsklasse" # oder: "Label"
+# response_for_lulc <- "Landnutzungsklasse" # oder: "Label"
 
 # fix and final
 fitting_epsg_as_string <- paste('EPSG:4326')
@@ -563,15 +459,12 @@ path_for_satelite_for_trainingSites = "C:/Users/49157/Documents/GitHub/Spredmo_G
 prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
 
 # thinks for aoi
-path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
+path_for_satelite_for_aoi = path_for_satelite_for_trainingSites
 prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
 # storage place for combined data
 path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
-
-# training does not work with own training data - so we use this:
-# fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_hanna_meyer_data_combined_ll.RDS")
-# prepaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
+repaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
 
 # this functions are always needed:
 image_mask_for_data_cube <- set_image_mask_for_data_cube()
@@ -596,6 +489,8 @@ suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no in
 
 # last saving for Samplepoint_coordinates_as_Json
 write(suggested_sample_points_for_plumber, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/suggested_sample_points.json")
+message("DONE: save sample points as json :)")
+
 
 
 #################################################
@@ -603,7 +498,6 @@ write(suggested_sample_points_for_plumber, "C:/Users/49157/Documents/GitHub/Spre
 # end of process
 #################################################
 #################################################
-
 
 
 
