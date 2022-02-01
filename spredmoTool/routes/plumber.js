@@ -4,17 +4,24 @@ const axios = require('axios');
 //var dataAPI = require('./../public/javascripts/download_visualize')
 
 router.post('/',function(req, res) {
-  /*
-  if (req.body.modus=="model"){
-    axios.get('http://127.0.0.1:4280/echo?msg=sdf')
+  
+    axios.post('http://127.0.0.1:6516/aoamodel', {
+        "cloud_cover": 60,
+        "start_day": "2021-04-01",
+        "end_day": "2021-04-30",
+        "resolution": 100,
+        "path_model": "/tmpextern/model2323411.RDS",
+        "aoi": "/tmpextern/aoi1232523.geojson"
+    })
     .then(response => {
-      msg=response.data.msg[0]
-      console.log(msg)
+      console.log(response.data)
     })
     .catch(error => {
       console.log(error);
     })
-  }
+  
+
+  /*
   else if(req.body.modus=="tdata"){
     axios.get('http://127.0.0.1:4280/echo?msg=Hello%2Cthis%20is%20the%20mean')
     .then(response => {
@@ -32,7 +39,8 @@ router.post('/',function(req, res) {
 
 
 router.get('/results',function(req, res) {
-  axios.get('http://127.0.0.1:8000/results')
+  /*
+  axios.get('http://127.0.0.1:3010/results')
     .then(response => {
       console.log(response.data)
       res.send(response.data)
@@ -40,6 +48,7 @@ router.get('/results',function(req, res) {
     .catch(error => {
       console.log(error);
     })
+    */
 }
 )
 

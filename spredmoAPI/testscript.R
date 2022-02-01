@@ -252,80 +252,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
 
 
 
-
-
-#* @apiTitle Plumber Spredmo API
-
-#* Log some information about the incoming request
-#* @filter logger
-function(req) {
-  cat(as.character(Sys.time()), "-",
-      req$REQUEST_METHOD, req$PATH_INFO, "-",
-      req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n")
-  
-  # Forward the request
-  forward()
-}
-
-
-#* @filter cors
-cors <- function(req, res) {
-
-  res$setHeader("Access-Control-Allow-Origin", "*")
-
-  if (req$REQUEST_METHOD == "OPTIONS") {
-    res$setHeader("Access-Control-Allow-Methods","*")
-    res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
-    res$status <- 200
-    return(list())
-  } else {
-    plumber::forward()
-  }
-}
-
-
-
-#* @filter createtxt
-function(req) {
-  a <- 3
-  saveRDS(a, file = paste0("testtmp/data",Sys.Date()))
-  plumber::forward()
-}
-
-
-#* Endpunkt der aoa script startet MIT model
-#* @post /aoamodel
-#* @preempt cors
-function(req, res) {
-
-  a <- fromJSON(toString(req$body))
-  start_calc_with_model(fromJSON(req$body))
-
-}
-
-
-
-#* Endpunkt der aoa script startet OHNE model
-#* @post /aoatdata
-#* @preempt cors
-function(req, res) {
-
-  return(req$body)
-}
-
-
-#* @plumber
-function(pr) {
-  pr %>%
-    pr_set_api_spec( yaml::read_yaml("openapi.yaml"))
-}
-
-
-
-
-
 start_calc_with_model <- function(request_body) {
-  
   cloud_cover <- request_body$cloud_cover
   start_day <- request_body$start_day
   end_day <- request_body$end_day
@@ -405,8 +332,8 @@ start_calc_with_model <- function(request_body) {
   dipath <- "tmpextern/di_of_aoa.tif"
   aoapath <- "tmpextern/aoa.tif"
   samplepointspath <- "tmpextern/sample_points.json"
-  
-  
+
+ 
   
   return(list(
     modelpath,
