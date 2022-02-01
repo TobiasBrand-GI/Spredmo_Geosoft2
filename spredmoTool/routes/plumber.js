@@ -1,5 +1,6 @@
 var express = require('express'); // Express routing middleware
 var router = express.Router();
+
 const axios = require('axios');   // Library for http requests
 const multer = require('multer'); // Library for local file management
 const scp = require('scp')        // Library for connecting and exchanging files with an AWS instance via scp
@@ -33,8 +34,10 @@ const uploadDest = multer({storage:storage})
 router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
   ui_Body=req.body; 
   fileNames.push(fileName); // Saving file name for later use
+
   res.redirect("/download.html")
 })
+
 
 /**
  * API call to send all necessary parameters and files via scp and axios to the Plumber API and AWS instance.
@@ -157,10 +160,12 @@ async function upload(localPath, file, type, jsonPath){
     // Delete copied file locally to free memory
     fs.unlink(localPath,(err)=>{
       console.log(err)
+      
     })
     fs.unlink(jsonPath,(err)=>{
       console.log(err)
     })
+
   } catch (e) {
       console.log(e)
   }

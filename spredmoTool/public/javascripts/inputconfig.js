@@ -6,16 +6,21 @@ displayAmountSlider(0);
  * @param {String} choice "model"(for users with trained models) or "data"(for users with only training data), depending on the input that needs to visualized
  * @param {Integer} status (0 or 1), 0 if the Container doesnt exist, 1 for the rest
  */
+
 function changeInputHTML(choice){
+
     if(choice=="model"){
         changeFileUpload("ihr bereits trainiertes Klassifizierungsmodell als .rds- oder .rdata-File", ".rds", ".rdata");
     }
     else if(choice=="data"){
+
         changeFileUpload("ihre Trainingsdaten als GeoJSON oder Geopackage", ".geojson", ".gpkg");
+
     }
 }
 
 /**
+
  * Changes a html file upload input with the placeholder inherrited via parameter and sets its accepted file formats (MIME types).
  * @param {String} placeholder text that will be shown in the upload field
  * @param {*} maindiv html div-container to append the file upload on
@@ -26,6 +31,7 @@ function changeFileUpload(placeholder, type1, type2){
 
     let h=document.getElementById("fileHeader");
     h.innerHTML="Fügen Sie hier "+placeholder+" ein";
+
 
 }
 

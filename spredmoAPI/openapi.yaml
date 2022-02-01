@@ -1,0 +1,87 @@
+servers:
+   -url: ''
+openapi: 3.0.3
+info:
+  description: API Description
+  title: Spredmo API
+  version: 1.0.0
+paths:
+  /aoamodel:
+    post:
+      summary: 'Endpunkt der AOA script startet MIT model'
+      responses:
+        default:
+          description: Default response.
+      parameters: []
+      requestBody:
+        description: User inputs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                properties:
+                  cloud_cover:
+                    type: number
+                    title: "Cloudcover the user whishes"
+                    example: 50
+                  start_day:
+                    type: string
+                    title: "Start Day of search for sentinal data"
+                    example: "2021-04-01"
+                  end_day:
+                    type: string
+                    title: "End Day of search for sentinal data"
+                    example: "2021-04-30"
+                  resolution:
+                    type: number
+                    title: "Resolution of the sentinal data"
+                    example: 100
+                  path_model:
+                    type: string
+                    title: "path of the training data"
+                    example: "tmp/test_model.rds"
+                  aoi:
+                    type: string
+                    title: "path of the aoi"
+                    example: "tmp/test_aoi.geojson"
+  /aoatdata:
+    post:
+      summary: 'Endpunkt der AOA script startet OHNE model MIT trainingsdaten'
+      responses:
+        default:
+          description: Default response.
+      parameters: []
+      requestBody:
+        description: User inputs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cloud_cover:
+                  type: number
+                  title: "Cloudcover the user whishes"
+                  example: 50
+                start_day:
+                  type: string
+                  title: "Start Day of search for sentinal data"
+                  example: "2021-04-01"
+                end_day:
+                  type: string
+                  title: "End Day of search for sentinal data"
+                  example: "2021-04-30"
+                resolution:
+                  type: number
+                  title: "Resolution of the sentinal data"
+                  example: 100
+                path_traindat:
+                  type: string
+                  title: "path of the training data"
+                  example: "/tmpextern/train_dat2323411.RDS"
+                aoi:
+                  type: string
+                  title: "path of the aoi"
+                  example: "/tmpextern/aoi1232523.geojson"
