@@ -1,21 +1,25 @@
 function getRResults() {
-    return $.ajax({
+        return $.ajax({
         url: "/plumber/results",
         method: "GET",
         })
 }
 
 async function visualize_Results(){
-    try{
-        const res = await getRResults();
-        console.log(res)
-        setTimeout(()=> {
-            document.getElementById("loading").style.display="none";
+    document.getElementById("loading").style.display="none";
             document.getElementById("mapid").style.display="block";
             document.getElementById("dwButton").disabled=false;
             dmap.invalidateSize();
-            loadTIFF("../images/di_of_aoa (2).tif");
-        }, 2000)
+    loadTIFF("images/aoa.tif");
+    try{
+        const res = await getRResults();
+        if(res.success===true){
+            
+            
+        }else{
+            alert(res.message);
+            window.location.href = "index.html";
+        }
     }catch(err){
         console.log(err)
     }
@@ -28,7 +32,7 @@ function getDownload(url, fileType, fileName) {
     .then(blob => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    let currTime= convertTimes(Date.now())
+    let currTime= createFileNames(Date.now())
     a.style.display = 'none';
     a.href = url;
     a.download = fileName+'_'+currTime+'.'+fileType;
@@ -79,7 +83,7 @@ async function download(){
  * @param {*} unixTime unix timestemp
  * @returns String of Numbers encoding the day and time with Year, Month, Day, Hour, Minutes and Seconds
  */
- function convertTimes(unixTime){
+ function createFileNames(unixTime){
     let dateObject = new Date(unixTime);
     let converted=dateObject.toLocaleTimeString([],{year:'2-digit', month:'2-digit', day:'2-digit', hour: '2-digit', minute:'2-digit',second:"2-digit"});
     for (i=0; i<2; i++){
