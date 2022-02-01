@@ -18,6 +18,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/home', indexRouter);
+app.use('/start', indexRouter);
+app.use('/index', indexRouter);
 app.use('/plumber', plumberRouter);
 
 // catch 404 and forward to error handler
@@ -33,6 +36,6 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  //res.redirect("error.html");
+  res.redirect("error.html");
 });
 module.exports = app;

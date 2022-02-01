@@ -10,4 +10,10 @@ To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
 
 For the Frontend part of the app, you need to install Docker on your local machine or web-hosting server and simply run the Docker Container.
 Due to security reasons, we cannot include a working identification key for connecting with the AWS. So to be able to connect to your instance,
-start your Docker container and run ```docker exec -it <container name> /bin/bash``` and copy a valid <mark>key.pem</mark> into the ```SPREDMO_GEOSOFT2/spredmoTool/keys ``` folder.
+start your Docker container and run
+
+ ```docker exec -it <container name> /bin/bash```
+ 
+  and copy a valid key.pem into the
+  
+ ```SPREDMO_GEOSOFT2/spredmoTool/keys ``` folder.

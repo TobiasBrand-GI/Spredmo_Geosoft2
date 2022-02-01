@@ -100,7 +100,7 @@ async function download(){
     host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
     port: 22, //port used for scp 
     username: 'ubuntu', //username to authenticate
-    privateKey: fs.readFileSync('../keys/key.pem'), // local relative path to your pem file
+    privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
   }).then(client => {
     client.downloadFile('/tmpextern/aoa.tif', 'public/images/test.tif')
       .then(response => {
@@ -114,7 +114,7 @@ async function download(){
 }
 
 /**
- * Function to upload a given local file to an AWS instance via scp. Autogenerate unique file names with a set prefix and a suffix acoording to the date.
+ * Uploads a given local file to an AWS instance via scp. Autogenerate unique file names with a set prefix and a suffix acoording to the date.
  * @param {String} localPath Path to the local file to be uploaded to the AWS
  * @param {String} file Short prefix (model, train) for later name creation
  * @param {String} type MIME type of the file which should be uploaded
@@ -126,7 +126,7 @@ async function upload(localPath, file, type){
       host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
       port: 22, //port used for scp 
       username: 'ubuntu', //username to authenticate
-      privateKey: fs.readFileSync('../keys/key.pem'), // local relative path to your pem file
+      privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
     })
     // Create uniquie file name
     let uniqueStamp = createFileNames(Date.now());
