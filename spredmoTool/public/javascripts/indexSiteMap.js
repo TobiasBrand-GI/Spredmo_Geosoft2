@@ -26,7 +26,7 @@ mymap.addControl(new L.Control.Draw( {
         }
     },
     draw: {
-        // Only rectangle and polygon draw function is needed
+        // Only rectangle draw function is needed
         polyline: false,
         polygon: false,
         marker: false,
@@ -41,15 +41,16 @@ mymap.on(L.Draw.Event.CREATED, function (event) {
     let geoJSONObj=layer.toGeoJSON();
     let geoJSONStr=JSON.stringify(geoJSONObj)
     layer.addTo(drawnItems);
+    addJSONtoInput(geoJSONStr);
     $(".leaflet-draw-toolbar-top").css("visibility","hidden"); // Disable draw button to prevent multiple shapes
-    //fillPopupHTML("","",geoJSONStr, 0,layer);
 })
 
 // Listener to catch when the existing shape is edited
 mymap.on('draw:edited', function(e){
     var layer = e.layers;
     let geoJSONObj=layer.toGeoJSON();
-    let geoJSONStr=JSON.stringify(geoJSONObj)
+    let geoJSONStr=JSON.stringify(geoJSONObj);
+    addJSONtoInput(geoJSONStr);
     console.log("edited");
 })
 
@@ -57,8 +58,9 @@ mymap.on('draw:edited', function(e){
 mymap.on('draw:deleted', function(e){
     var layers = e.layers;
     layers.eachLayer(function (layer) {
-        drawnItems.clearLayers(); // Clearing old markers
+        drawnItems.clearLayers(); // Clearing old polygones
     });
+    addJSONtoInput("");
     if(Object.keys(drawnItems._layers).length==0){
         $(".leaflet-draw-toolbar-top").css("visibility","visible");
     }
@@ -76,3 +78,28 @@ mymap.on('draw:deleted', function(e){
     return dateObject.toLocaleTimeString([],{hour: '2-digit', minute:'2-digit'});
 }
 
+/**
+ * Adds a GeoJSON to the map as the Area of interest. Gets the input from the text input on the index page.
+ */
+function addJSONtoMap(){
+    try{
+        let jsonString=document.getElementById("geoJSONInput").value;
+        let jsonObj=JSON.parse(jsonString)
+        drawnItems.clearLayers(); // Clearing old polygones
+        L.geoJSON(jsonObj).addTo(drawnItems);
+        $(".leaflet-draw-toolbar-top").css("visibility","hidden"); // Disable draw button to prevent multiple shapes
+    }catch(e){
+        console.error(e);
+        alert("Fehlerhafter oder leerer JSON-Code")
+    }
+    
+}
+
+/**
+ * Adds a GeoJSON String to the text input on the index page.
+ * @param {String} code GeoJSON String from Leaflet Map
+ */
+function addJSONtoInput(code){
+    let jsonCode=document.getElementById("geoJSONInput");
+    jsonCode.value=code;
+}
