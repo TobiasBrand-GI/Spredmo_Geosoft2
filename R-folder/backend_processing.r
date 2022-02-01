@@ -132,7 +132,6 @@ generate_raster_cube <- function(input_area, input_collection, input_cube_view, 
 #####
 ### save data from data cube as GeoTiff
 save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
-    warning(">>> check path !!!")
     message("DO NOT WORRY :)")
     message("this function takes some time:")
     write_tif(input_cube,
@@ -151,7 +150,6 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
 #####
 ### Raster data (predictor variables)
 load_predictors_and_rename_bands <- function() {
-    warning(">>> check path !!!")
     sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
     # rename bands
     names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
@@ -174,7 +172,6 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
     message("DONE: merge vector and raster")
     saveRDS(extr, file= path_for_combined_data)
     message("DONE: save combined Data as RDS")
-    warning(">>> check return :) ...")
     return(extr_sp)
 }
 
