@@ -346,7 +346,7 @@ get_raster_stack <- function(){
   # filter geometry of aoi in raster stack
   seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
   for (i in seq_for_loop) {
-    print("band iteration ", i)
+    print(paste("band iteration ", i))
     # sen_ms$B02 <- mask(sen_ms$B02, input_shape)
     out_sentinell_aoi[[i]] <- mask(out_sentinell_aoi[[i]], aoi)
   }
