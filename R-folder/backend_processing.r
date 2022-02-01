@@ -63,7 +63,7 @@ path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-fo
 
 # training does not work with own training data - so we use this:
 fake_training_data_for_testing <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_hanna_meyer_data_combined_ll.RDS")
-
+prepaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
 
 
 
@@ -270,7 +270,6 @@ set_threads()
 #####
 ### prepair aoi
 get_sentinelDat_for_aoi <-function(input_aoi) {
-    warning(">>> check path !!!")
     aoi_bbox_wgs84 <- calculate_bbox(input_aoi, fitting_epsg_as_string)
     # bbox_wgs84
     aoi_sentinelDat <- get_sentinelDat_form_stac(aoi_bbox_wgs84, start_day, end_day)
@@ -286,6 +285,7 @@ get_sentinelDat_for_aoi <-function(input_aoi) {
     # plot(cube_for_trainingSites, zlim=c(0, 1800))
     # save as geotif
     save_data_as_geoTiff(cube_for_aoi, path_for_satelite_for_aoi, prefix_for_geoTiff_for_aoi)
+    message("DONE: get_sentinelDat_for_aoi")
 }
 
 
@@ -340,16 +340,14 @@ get_raster_stack <- function(){
   file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
   out_sentinell_aoi <- stack(file_path)
   names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
-  # plot(sentinell_aoi)
-  # library(mapview)
-  # mapview(sentinell_aoi)
+  message("DONE: rename bands of raster stack")
   # filter geometry of aoi in raster stack
   seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
   for (i in seq_for_loop) {
     print(paste("band iteration ", i))
-    # sen_ms$B02 <- mask(sen_ms$B02, input_shape)
     out_sentinell_aoi[[i]] <- mask(out_sentinell_aoi[[i]], aoi)
   }
+  message("DONE: filter geometry of aoi")
   message("DONE: get_raster_stack")
   return(out_sentinell_aoi)
 }
@@ -357,15 +355,14 @@ get_raster_stack <- function(){
 
 #####
 ### generate own model
-generate_own_model <- function(input_sentinell_aoi){
+generate_own_model <- function(input_sentinell_aoi, input_com_trainingData){
   ### Reference data
-  warning(">>> check path !!!")
-  warning(">>> this is fake data !!!")
-  combined_trainingData <- fake_training_data_for_testing
-  # combined_trainingData$row_id <- 1:nrow(combined_trainingData) # individual id for every row in data.frame is needed
-  # View(combined_trainingData)
-  trainDat <- combined_trainingData
-  trainids <- createDataPartition(combined_trainingData$ID,list=FALSE,p=0.15)
+  input_com_trainingData <- fake_training_data_for_testing
+  # input_com_trainingData <- prepaired_trainingDat
+  # input_com_trainingData$row_id <- 1:nrow(input_com_trainingData) # individual id for every row in data.frame is needed
+  View(input_com_trainingData)
+  trainDat <- input_com_trainingData
+  trainids <- createDataPartition(input_com_trainingData$ID,list=FALSE,p=0.15)
   # head.matrix(trainids) # trainids is not a list, but matrix
   trainDat <- trainDat[trainids,]
   # View(trainDat)
@@ -401,7 +398,7 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   #####
   ## Model prediction
   prediction <- predict(input_sentinell_aoi, input_model)
-  
+  message("DONE: prediction")
   
   #####
   ### validation - not needed (??)
@@ -433,22 +430,23 @@ prediction_and_aoa <- function(input_model, input_sentinell_aoi) {
   # plot(AOA)
   # message(paste0("Percentage of Muenster that is within the AOA: ",
   #                round(sum(values(AOA$AOA)==1)/ncell(AOA),2)*100," %"))
-  message("DONE: prediction_and_aoa")
+  message("DONE: aoa")
   #}
 
   #####
   ### savings for output
   # save_outputs <- function(input_own_model){
-  saveRDS(input_model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
+  # saveRDS(input_model, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/final_model.RDS")
   writeRaster(prediction, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/lulc-prediction.tif", overwrite=TRUE)
   writeRaster(AOA$DI, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/di_of_aoa.tif", overwrite=TRUE)
   writeRaster(AOA$AOA, filename = "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/aoa.tif", overwrite=TRUE)
-  message("DONE: save_outputs")
+  message("DONE: save_outputs: model, prediction and AOA")
   
   
   #####
   # calculate_random_points(aoi, AOA_UTM)
   sample_points <- calculate_random_points(aoi, AOA$AOA)
+  message("DONE: return sample points")
   return(sample_points)
 }
 
@@ -497,8 +495,8 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   ##swap latitude and longitude
   Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
   #Samplepointstojson
-  
   Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
+  message("DONE: calculate_random_points")
   return(Samplepoint_coordinates_as_Json)
 }
 
@@ -520,7 +518,7 @@ without_model_but_trainingSites <- function () {
   # get sentinell for aoi
   sentinell_aoi <- get_raster_stack()
   # create own model
-  own_model <- generate_own_model(sentinell_aoi)
+  own_model <- generate_own_model(sentinell_aoi, combined_trainingData)
   # prediction and aoa
   suggested_sample_points <- prediction_and_aoa(own_model, sentinell_aoi) # no return
   # save_outputs
