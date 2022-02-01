@@ -14,6 +14,7 @@ final_model.rds
 merged_trainData.RDS
 
 suggested_sample_points_for_plumber.json
+suggested_sample_points.json
 
 .RData
 .Rhistory
