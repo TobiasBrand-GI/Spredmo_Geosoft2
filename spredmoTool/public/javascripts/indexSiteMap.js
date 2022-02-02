@@ -43,7 +43,6 @@ mymap.on(L.Draw.Event.CREATED, function (event) {
     layer.addTo(drawnItems);
     addJSONtoInput(geoJSONStr);
     $(".leaflet-draw-toolbar-top").css("visibility","hidden"); // Disable draw button to prevent multiple shapes
-    //fillPopupHTML("","",geoJSONStr, 0,layer);
 })
 
 // Listener to catch when the existing shape is edited
@@ -79,7 +78,9 @@ mymap.on('draw:deleted', function(e){
     return dateObject.toLocaleTimeString([],{hour: '2-digit', minute:'2-digit'});
 }
 
-
+/**
+ * Adds a GeoJSON to the map as the Area of interest. Gets the input from the text input on the index page.
+ */
 function addJSONtoMap(){
     try{
         let jsonString=document.getElementById("geoJSONInput").value;
@@ -94,6 +95,10 @@ function addJSONtoMap(){
     
 }
 
+/**
+ * Adds a GeoJSON String to the text input on the index page.
+ * @param {String} code GeoJSON String from Leaflet Map
+ */
 function addJSONtoInput(code){
     let jsonCode=document.getElementById("geoJSONInput");
     jsonCode.value=code;
