@@ -247,8 +247,8 @@ get_combined_trainingData <- function(use_trainingSites) {
 ### get stack with sentinel for aoi
 get_raster_stack <- function(){
   ### prepair raster stack
-  file_end <- substr(start_day,1, nchar(start_day)-3)
-  file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="")
+  file_end <- substr(start_day,1, nchar(start_day)-3) # gets the year and the month of date
+  file_path <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_end, ".tif", sep="") # 
   out_sentinell_aoi <- stack(file_path)
   names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
   message("DONE: rename bands of raster stack")
@@ -362,7 +362,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   
   ##Anzahl an Punkten skalierend zur Groessee der AOI
   get_area_clipped<-areaPolygon(clipped) 
-  quantity_points<-get_area_clipped*0.00001
+  quantity_points<-get_area_clipped*0.000001
   
   ##random suggested points to improve AOA
   pts <- spsample(clipped, quantity_points, type = 'random')
@@ -441,11 +441,11 @@ try(unlink("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_fil
 
 #####
 ### parameters from plumber APIs:
-aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_aoi_weissenfels.geojson")
-resolution_x <- 100 #300    # resolution_y <- "auto" derived by _x
+aoi <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/demo.geojson")
+resolution_x <- 2000 #300    # resolution_y <- "auto" derived by _x
 start_day <- "2021-04-01"
 end_day <- "2021-04-30"
-cloud_coverage <- 60
+cloud_coverage <- 30
 # response_for_lulc <- "Landnutzungsklasse" # oder: "Label"
 
 # fix and final
@@ -461,7 +461,6 @@ prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
 
 # storage place for combined data
 path_for_combined_data <- "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS"
-repaired_trainingDat <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
 
 # this functions are always needed:
 image_mask_for_data_cube <- set_image_mask_for_data_cube()
@@ -481,8 +480,8 @@ extern_model <- readRDS("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-fold
 suggested_sample_points_for_plumber <- with_extern_model(extern_model)
 
 # if no model but training sites
-trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Gustav_trainingSites.geojson")
-suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no input
+# trainingSites <- read_sf("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/tests/test_Gustav_trainingSites.geojson")
+# suggested_sample_points_for_plumber <- without_model_but_trainingSites() # no input
 
 # last saving for Samplepoint_coordinates_as_Json
 write(suggested_sample_points_for_plumber, "C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/suggested_sample_points.json")
