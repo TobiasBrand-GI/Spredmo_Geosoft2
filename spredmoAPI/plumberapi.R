@@ -34,20 +34,6 @@ library(plumber)
 
 
 
-
-#####
-### get right crs - function not needed any more
-# find_right_crs <- function(input_area) {
-# longitude <- st_bbox(input_area)[1]
-# utm_zone <- (floor((longitude + 180)/6) %% 60) + 1
-# targetString <- paste('EPSG:326',utm_zone, sep = "")
-# it only works with following EPSG-code
-# targetString <- paste('EPSG:4326')
-# message("DONE: get right crs")
-# return(targetString)
-# }
-
-
 #####
 ### prepair bbox
 calculate_bbox <- function(input_sites, in_epsg) {
@@ -133,18 +119,10 @@ set_threads <- function() {
 #####
 ### make raster cube
 generate_raster_cube <- function(input_area, input_collection, input_cube_view, input_image_mask, input_epsg) {
-  #print(input_area$geometry)
-  #print(input_collection)
-  #print(input_cube_view$space$srs)
-  #print(input_image_mask)
-  #print(input_epsg)
-  # library(dplyr) # needed for '%>%'
   if (!is.null(input_area$geometry)){
     temp <- input_area$geometry
   } else  temp <- input_area$geom
-  satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) #%>%
-  # print(satelite_cube)
-  # filter_geom(satelite_cube, temp, srs = input_epsg)
+  satelite_cube <- raster_cube(input_collection, input_cube_view, input_image_mask) 
   message("DONE: raster_cube()")
   return(satelite_cube)
 }
@@ -169,24 +147,11 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
 }
 
 
-#####
-### Raster data (predictor variables)
-load_predictors_and_rename_bands <- function() {
-  warning(">>> check path !!!")
-  # sen_ms <- stack(paste(input_storage_path, input_prefix))
-  sentinel <- stack("C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/satelite_for_trainingSites__2021-04.tif")
-  # rename bands
-  names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-  # names(sentinel)
-  # plotRGB(sentinel,stretch="lin",r=3,g=2,b=1)
-  message("DONE: load as RasterStack")
-  return(sentinel)
-}
 
 
 #####
 ### Daten kombinieren
-combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_trainingSites) {
+combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_trainingSites, path_for_combined_data) {
   spatVector <- terra::vect(input_trainingSites)
   spatRaster <- terra::rast(input_predictors_stack, subds=0, opts=NULL)
   message("DONE: transform to SpatRaster and SpatVector")
@@ -227,13 +192,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
   
   ##random suggested points to improve AOA
   pts <- spsample(clipped, quantity_points, type = 'random')
-  ##plotten
-  #plot(clipped)
-  #plot(pts, add=T,col = 'red')
   
-  
-  ##plotten ende
-  #plot(pts, add = T, col = 'red')
   pts1 <- data.frame(x=pts$x,y=pts$y) 
   coordinates(pts1) <- ~x+y
   
@@ -261,7 +220,7 @@ calculate_random_points <- function(Areaofinterest, AOA) {
 function(req) {
   cat(as.character(Sys.time()), "-",
       req$REQUEST_METHOD, req$PATH_INFO, "-",
-      req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n")
+      "FROM", req$REMOTE_ADDR, "\n")
   
   # Forward the request
   forward()
@@ -284,16 +243,12 @@ cors <- function(req, res) {
 }
 
 
-
-
-
 #* Endpunkt der aoa script startet MIT model
 #* @post /aoamodel
 #* @preempt cors
 function(req, res) {
-
-  a <- fromJSON(toString(req$body))
-  start_calc_with_model(fromJSON(req$body))
+  
+  start_calc_with_model(req$body)
 
 }
 
@@ -304,7 +259,7 @@ function(req, res) {
 #* @preempt cors
 function(req, res) {
 
-  return(req$body)
+  start_calc_with_tdata(req$body)
 }
 
 
@@ -318,26 +273,30 @@ function(pr) {
 
 
 
-start_calc_with_model <- function(request_body) {
+start_calc_with_model <- function(body) {
+
+  start_time <- Sys.time()
+  message("start processing")
   
-  cloud_cover <- request_body$cloud_cover
+  request_body <- fromJSON(body)
+  
+  cloud_cover <- as.numeric(request_body$cloud_cover)
   start_day <- request_body$start_day
   end_day <- request_body$end_day
-  resolution <- request_body$resolution
+  resolution <- as.numeric(request_body$resolution)
   path_model <- request_body$path_model
   path_aoi <- request_body$path_aoi
+  
+  
   
   # read files at paths
   model <- readRDS(path_model)
   aoi <- st_read(path_aoi)
-  # <- aoigeojson$geometry$coordinates[0]
   
   # paths for temporary saving
-  path_for_satelite_for_trainingSites <- "tmp"
-  prefix_for_geoTiff_for_trainingSites = "satelite_for_trainingSites__"
   
-  path_for_satelite_for_aoi = path_for_satelite_for_trainingSites #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files"
-  prefix_for_geoTiff_for_aoi = "satelite_for_aoi__"
+  path_for_satelite_for_aoi = "tmp"
+  prefix_for_geoTiff_for_aoi = "satellite_for_aoi_"
   
   
   
@@ -359,12 +318,13 @@ start_calc_with_model <- function(request_body) {
   
   message("DONE: get_sentinelDat_for_aoi")
   
-  file_ending_raster_stack <- substr(start_day,1, nchar(start_day)-3)
-  file_path_raster_stack <- paste(path_for_satelite_for_aoi, "/", prefix_for_geoTiff_for_aoi, file_ending_raster_stack, ".tif", sep="")
+  file_end <- substr(start_day,1, nchar(start_day)-3)
+  file_path_raster_stack <- paste(path_for_satelite_for_aoi,"/",prefix_for_geoTiff_for_aoi,file_end,".tif",sep = "")
   out_sentinell_aoi <- stack(file_path_raster_stack)
   
   names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
   message("DONE: rename bands of raster stack")
+
   seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
   for (i in seq_for_loop) {
     print(paste("band iteration ", i))
@@ -386,21 +346,22 @@ start_calc_with_model <- function(request_body) {
   writeRaster(prediction, filename = "tmp/lulc-prediction.tif", overwrite=TRUE)
   writeRaster(AOA$DI, filename = "tmp/di_of_aoa.tif", overwrite=TRUE)
   writeRaster(AOA$AOA, filename = "tmp/aoa.tif", overwrite=TRUE)
-  message("DONE: save_outputs: model, prediction and AOA")
   
   sample_points <- calculate_random_points(aoi, AOA$AOA)
   write(sample_points, "tmp/sample_points.json") #check if correct
   
-  message("DONE: generating sample points")
+  message("DONE: save_outputs: model, prediction, aoa and samplepoints")
   
   #write external paths
-  modelpath <- "tmpextern/final_model.RDS"
+  modelpath <- "tmpextern/final_model.rds"
   lulcpath <- "tmpextern/lulc-prediction.tif"
   dipath <- "tmpextern/di_of_aoa.tif"
   aoapath <- "tmpextern/aoa.tif"
   samplepointspath <- "tmpextern/sample_points.json"
-  
-  
+
+  end_time <- Sys.time()
+  time_difference <- paste("total processing time: ", round(100000 * (end_time - start_time)) / 100000, " Minutes")
+  print(time_difference)  
   
   return(list(
     modelpath,
@@ -409,4 +370,157 @@ start_calc_with_model <- function(request_body) {
     aoapath,
     samplepointspath
   ))
+}
+
+
+
+
+start_calc_with_tdata <- function(body) {
+
+  start_time <- Sys.time()
+  message("start processing")
+  
+  request_body <- fromJSON(body)
+  
+  cloud_cover <- as.numeric(request_body$cloud_cover)
+  start_day <- request_body$start_day
+  end_day <- request_body$end_day
+  resolution <- as.numeric(request_body$resolution)
+  path_tdata <- request_body$path_tdata
+  path_aoi <- request_body$path_aoi
+  
+  # read files at paths
+  tdata <- st_read(path_tdata)
+  aoi <- st_read(path_aoi)
+  
+  # paths for temporary saving
+  path_for_satelite_for_trainingSites <- "tmp"
+  prefix_for_geoTiff_for_trainingSites = "satellite_for_tdata_"
+  
+  path_for_satelite_for_aoi = path_for_satelite_for_trainingSites 
+  prefix_for_geoTiff_for_aoi = "satellite_for_aoi_"
+
+  path_for_combined_data <- "tmp/merged_tdata.rds"
+  
+  ##### start calc
+  ### this function calls are always needed
+  fitting_epsg_as_string <- paste('EPSG:4326') 
+  
+  image_mask_for_data_cube <- set_image_mask_for_data_cube()
+  set_threads()
+  
+  aoi_bbox_wgs84 <- calculate_bbox(aoi, fitting_epsg_as_string)
+  aoi_sentinelDat <- get_sentinelDat_form_stac(aoi_bbox_wgs84, start_day, end_day)
+  aoi <- st_transform(aoi, crs = fitting_epsg_as_string)
+  image_collection_for_aoi <- create_filtered_image_collection(aoi_sentinelDat, cloud_cover)
+  cube_view_for_aoi <- generate_cube_view(fitting_epsg_as_string, resolution, start_day, end_day, aoi_bbox_wgs84)
+  cube_for_aoi <- generate_raster_cube(aoi, image_collection_for_aoi, cube_view_for_aoi, image_mask_for_data_cube, fitting_epsg_as_string)
+  save_data_as_geoTiff(cube_for_aoi, path_for_satelite_for_aoi, prefix_for_geoTiff_for_aoi)
+
+  file_end <- substr(start_day,1, nchar(start_day)-3)
+  file_path_raster_stack <- paste(path_for_satelite_for_aoi,"/",prefix_for_geoTiff_for_aoi,file_end,".tif",sep = "")
+  out_sentinell_aoi <- stack(file_path_raster_stack)
+  
+  names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
+  message("DONE: rename bands of raster stack")
+  seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
+  for (i in seq_for_loop) {
+    print(paste("band iteration ", i))
+    out_sentinell_aoi[[i]] <- mask(out_sentinell_aoi[[i]], aoi)
+  }
+  message("DONE: filter geometry of aoi")
+  message("DONE: get_raster_stack")
+
+  sentinell_aoi <- out_sentinell_aoi #input_sentinell_aoi = sentinell_aoi
+  
+  message("DONE: get_sentinelDat_for_aoi")
+
+
+  message("start tdata")
+
+  bbox_wgs84 <- calculate_bbox(tdata, fitting_epsg_as_string)
+  sentinelDat <- get_sentinelDat_form_stac(bbox_wgs84, start_day, end_day)
+  tdata <- st_transform(tdata, crs = fitting_epsg_as_string)
+  image_collection_for_trainingSites <- create_filtered_image_collection(sentinelDat, cloud_cover)
+  cube_view_for_trainingSites <- generate_cube_view(fitting_epsg_as_string, resolution, start_day, end_day, bbox_wgs84)
+  cube_for_trainingSites <- generate_raster_cube(tdata, image_collection_for_trainingSites, cube_view_for_trainingSites, image_mask_for_data_cube, fitting_epsg_as_string)
+  
+  # save as geotif
+  save_data_as_geoTiff(cube_for_trainingSites, path_for_satelite_for_trainingSites, prefix_for_geoTiff_for_trainingSites)
+  
+  
+  # get RasterStack for trainingsites
+  file_end_tdata <- substr(start_day,1, nchar(start_day)-3)
+  file_path_raster_stack_tdata <- paste(path_for_satelite_for_trainingSites,"/",prefix_for_geoTiff_for_trainingSites,file_end_tdata,".tif",sep = "")
+  sentinel <- stack(file_path_raster_stack_tdata)
+  # rename bands
+  names(sentinel) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
+  message("DONE: load as RasterStack")
+  
+  trainingDat_sp <- combine_sentinel_with_trainingSites(sentinel, tdata, path_for_combined_data)
+  message("DONE: get_combined_trainingData")
+  
+  combined_trainingData <- trainingDat_sp
+
+  #start generate own model
+  trainDat <- combined_trainingData
+  trainDat <- st_set_geometry(trainDat, NULL)
+  trainids <- createDataPartition(combined_trainingData$id,list=FALSE,p=0.15)
+  trainDat <- trainDat[trainids,]
+  trainDat <- trainDat[complete.cases(trainDat),]
+  predictors <- head(names(sentinell_aoi), -1)
+
+  ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
+  own_model <- train(trainDat[,predictors],
+                 trainDat$Landnutzungsklasse, # trainDat[trainDat[3]], # trainDat$Class, # instead of response
+                 method="rf",
+                 metric="Kappa",
+                 trControl=ctrl_default,
+                 importance=TRUE,
+                 ntree=50)
+
+  message("DONE: generate_own_model")
+
+  prediction <- predict(sentinell_aoi, own_model)
+  message("DONE: prediction")
+  
+  cl <- makeCluster(4)
+  registerDoParallel(cl)
+  AOA <- aoa(sentinell_aoi, own_model, cl=cl)
+  message("DONE: aoa")
+  
+  saveRDS(own_model, "tmp/final_model.rds")
+  writeRaster(prediction, filename = "tmp/lulc-prediction.tif", overwrite=TRUE)
+  writeRaster(AOA$DI, filename = "tmp/di_of_aoa.tif", overwrite=TRUE)
+  writeRaster(AOA$AOA, filename = "tmp/aoa.tif", overwrite=TRUE)
+  
+  
+  sample_points <- calculate_random_points(aoi, AOA$AOA)
+  write(sample_points, "tmp/sample_points.json") #check if correct
+  
+  message("DONE: save_outputs: model, prediction, aoa and samplepoints")
+  
+  #write external paths
+  modelpath <- "tmpextern/final_model.rds"
+  lulcpath <- "tmpextern/lulc-prediction.tif"
+  dipath <- "tmpextern/di_of_aoa.tif"
+  aoapath <- "tmpextern/aoa.tif"
+  samplepointspath <- "tmpextern/sample_points.json"
+
+  #####
+  ### printing processing time
+  end_time <- Sys.time()
+  time_difference <- paste("total processing time: ",round(100000 * (end_time - start_time)) / 100000, " Minutes")
+  print(time_difference)
+
+ 
+  
+  return(list(
+    modelpath,
+    lulcpath,
+    dipath,
+    aoapath,
+    samplepointspath
+  ))
+
 }

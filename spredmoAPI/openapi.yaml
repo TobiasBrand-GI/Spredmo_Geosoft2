@@ -17,35 +17,10 @@ paths:
         description: User inputs
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              type: array
-              items:
-                properties:
-                  cloud_cover:
-                    type: number
-                    title: "Cloudcover the user whishes"
-                    example: 50
-                  start_day:
-                    type: string
-                    title: "Start Day of search for sentinal data"
-                    example: "2021-04-01"
-                  end_day:
-                    type: string
-                    title: "End Day of search for sentinal data"
-                    example: "2021-04-30"
-                  resolution:
-                    type: number
-                    title: "Resolution of the sentinal data"
-                    example: 100
-                  path_model:
-                    type: string
-                    title: "path of the training data"
-                    example: "tmp/test_model.rds"
-                  aoi:
-                    type: string
-                    title: "path of the aoi"
-                    example: "tmp/test_aoi.geojson"
+              type: string
+              example: [{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_model": "tmp/model.rds","path_aoi": "tmp/aoi.geojson"}]
   /aoatdata:
     post:
       summary: 'Endpunkt der AOA script startet OHNE model MIT trainingsdaten'
@@ -57,31 +32,7 @@ paths:
         description: User inputs
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              type: object
-              properties:
-                cloud_cover:
-                  type: number
-                  title: "Cloudcover the user whishes"
-                  example: 50
-                start_day:
-                  type: string
-                  title: "Start Day of search for sentinal data"
-                  example: "2021-04-01"
-                end_day:
-                  type: string
-                  title: "End Day of search for sentinal data"
-                  example: "2021-04-30"
-                resolution:
-                  type: number
-                  title: "Resolution of the sentinal data"
-                  example: 100
-                path_traindat:
-                  type: string
-                  title: "path of the training data"
-                  example: "/tmpextern/train_dat2323411.RDS"
-                aoi:
-                  type: string
-                  title: "path of the aoi"
-                  example: "/tmpextern/aoi1232523.geojson"
+              type: string
+              example: [{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_tdata": "tmp/tdata.geojson","path_aoi": "tmp/aoi.geojson"}]
