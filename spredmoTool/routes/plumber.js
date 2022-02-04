@@ -1,6 +1,5 @@
 var express = require('express'); // Express routing middleware
 var router = express.Router();
-
 const axios = require('axios');   // Library for http requests
 const multer = require('multer'); // Library for local file management
 const scp = require('scp')        // Library for connecting and exchanging files with an AWS instance via scp
@@ -47,18 +46,11 @@ router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
 router.get('/results',function(req, res) {
   let radioButton = ui_Body.modelInput;
   let mime = fileName.split(".")[1];
+  new Date('1995-12-17T03:24:00')
   try{
     // Validate GeoJSON of area of interest
     if(gjv.valid(JSON.parse(ui_Body.geoJSONInput))===false){  
       res.json({success:false, message:"Your area of interest GeoJSON Code was invalid!"})
-    }
-    // Check if end day was not before start day
-    else if(ui_Body.startDay>ui_Body.endDay){     
-      res.json({success:false, message:"The end day must be more recent then the start day!"})
-    }
-    // Check if no date is in the future
-    else if(ui_Body.startDay<Date.now() || ui_Body.endDay<Date.now()){
-      res.json({success:false, message:"Chosen dates cannot be in the future!"})
     }
     // Else case if validation was successfull
     else{
@@ -68,26 +60,21 @@ router.get('/results',function(req, res) {
       // Check if mode for a trained model was selected
       if(radioButton==="model"){
         // Check for correct MIME types
-        if(mime==="rds" || mime==="RDS" || mime==="rdata" || mime==="RDATA"){
+        if(mime==="rds" || mime==="RDS"){
           // upload moddel file to AWS
-          // upload("./tmp/"+fileName, "model", "RDS", "./tmp/aoi.geojson");
-          // axios.post('http://127.0.0.1:6516/aoamodel', {
-          //   "cloud_cover": 60,
-          //   "start_day": "2021-04-01",
-          //   "end_day": "2021-04-30",
-          //   "resolution": 100,
-          //   "path_model": "/tmp/model.RDS",
-          //   "aoi": "/tmp/aoi.geojson"
-          // })
-          // .then(response => {
-          //   console.log(response.data)
-          // })
-          // .catch(error => {
-          //   console.log(error);
-          // })
+          upload("./tmp/"+fileName, "model", "rds", "./tmp/aoi.geojson");
+          axios.post('http://127.0.0.1:6516/aoamodel', {
+            body:'[{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_model": "tmp/test_model.rds","path_aoi": "tmp/test_aoi.geojson"}]'
+          })
+          .then(response => {
+            res.send(response.data)
+          })
+          .catch(error => {
+            console.log(error);
+          })
         }else{
           // if not correct, send json with error message
-          res.json({success:false, message:"File is not an R model file in .rds or .rdata format!"})
+          res.json({success:false, message:"File is not an R model file in .rds format!"})
         }
       // Check if mode for train data was selected
       }else if(radioButton==="train"){
@@ -154,8 +141,8 @@ async function upload(localPath, file, type, jsonPath){
     // Save file name for the Plumber code
     // serverFileNames.push(newFileName1);
     // upload file
-    await client.uploadFile(localPath, "/tmpextern/"+file+"."+type); // , '/tmp/'+newFileName
-    await client.uploadFile(jsonPath, '/tmpextern/aoi.geojson');
+    await client.uploadFile(localPath, "/tmpextern/"+file+"."+type);
+    await client.uploadFile(jsonPath, '/tmpextern/'+file+'_aoi.geojson');
     client.close()
     // Delete copied file locally to free memory
     fs.unlink(localPath,(err)=>{
