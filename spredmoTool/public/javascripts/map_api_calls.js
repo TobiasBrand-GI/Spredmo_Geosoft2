@@ -53,16 +53,16 @@ async function download(){
     let responseString="";
     try{
         if(aoaCheck.checked){
-           downloadArray.push(['../images/aoa (2).tif','Area of Applicability','tif','aoa']) 
+           downloadArray.push(['../images/aoa.tif','Area of Applicability','tif','aoa']) 
         }
         if(classCheck.checked){
-            downloadArray.push(['../images/lulc-prediction (2).tif','Random Forest Classification','tif','lulc-classifier'])
+            downloadArray.push(['../images/lulc-prediction.tif','Random Forest Classification','tif','lulc-classifier'])
         }
         if(pointsCheck.checked){
-            downloadArray.push(['../images/map.geojson','further random recommended messaruement points','geojson','recommended-points'])
+            downloadArray.push(['../images/sugested_sample_points.json','further random recommended messaruement points','json','recommended-points'])
         }
         if(modelCheck.checked){
-            downloadArray.push(['../images/new.tif','R Classification Model','tif','class-model'])
+            downloadArray.push(['../images/final_model.rds','R Classification Model','RDS','class-model'])
         }
         if(downloadArray.length!=0){
             for(i=0; i<downloadArray.length;i++){
