@@ -35,6 +35,8 @@ RUN R -e "install.packages('magrittr')"
 RUN R -e "install.packages('geosphere')"
 RUN R -e "install.packages('jsonlite')"
 RUN R -e "install.packages('yaml')"
+RUN R -e "install.packages('randomForest')"
 
 # start plumberapi
-CMD ["/app/testapi.R"]
+CMD ["/app/plumberapi.R"]
+
