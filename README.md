@@ -15,7 +15,7 @@ The user has the possibility to either use an already trained model or to upload
 Our software supports multiple devices and operating systems due to the usage of Docker.
 To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
 + Install Docker for servers
-+ Install an R work environment on your instance.
++ Install an R work environment on your instance
 + Start up the Docker Container
 
 For the Frontend part of the app, you need to install Docker on your local machine or web-hosting server and simply run the Docker Container.
@@ -34,7 +34,7 @@ start your Docker container and run
 The area for which the Area of Applicability, the Dissimilarity Index and the Land-use/land cover classifications are applied. You can draw a rectangle in the Map or use  a valid JSON String.
 
 ## Model 
-The trained Model which must be provided by the user as an RDS-File or Rdata-File.
+The trained Model which must be provided by the user as an RDS-File.
 
 ## Trainingdata 
 If you have no trained Model, you must provide Training data to generate a trained model. The Training Data must be in a GeoJSON-File or in a GPKG-File.  And the Column/Attribute for LULC should be named “Landnutzungsklasse”.
@@ -64,50 +64,50 @@ As output you get the following results which can be downloaded separately.
 # Dependencies
 
 ## R Packages
-The following R packages were used in the project:
-sf (https://cran.uni-muenster.de/web/packages/sf/index.html) / License: GPL-2, MIT
-raster (https://mran.microsoft.com/web/packages/raster/index.html) / License: GPL-3
-terra https://cran.r-project.org/web/packages/terra/index.html) / License: GPL-3
-rstac (https://cran.r-project.org/web/packages/rstac/index.html) / License: MIT
-gdalcubes (https://cran.r-project.org/web/packages/gdalcubes/index.html) / License: MIT
-rgeos (https://cran.r-project.org/web/packages/rgeos/index.html) / License: GPL-2, GPL-3
-rgdal (https://cran.r-project.org/web/packages/rgdal/index.html) / License: GPL-2, GPL-3
-sp (https://cran.r-project.org/web/packages/sp/index.html) / License: GPL-2, GPL-3
-caret (https://mran.microsoft.com/snapshot/2017-02-04/web/packages/caret/index.html) / License: GPL-2, GPL-3
-CAST (https://cran.r-project.org/web/packages/CAST/index.html) / License: GPL-2, GPL-3
-latticeExtra (https://cran.r-project.org/web/packages/latticeExtra/index.html) / License: GPL-2, GPL-3
-foreach (https://cran.r-project.org/web/packages/foreach/index.html) / License: Apache-2
-iterators (https://cran.r-project.org/web/packages/iterators/index.html) / License: Apache-2
-doParallel (https://cran.r-project.org/web/packages/doParallel/index.html) /License: GPL-2
-parallel (https://www.rdocumentation.org/packages/parallel/versions/3.6.2) /License: Part of R 3.6.2
-magrittr (https://cran.r-project.org/web/packages/magrittr/index.html) / License: MIT
-geosphere (https://cran.r-project.org/web/packages/geosphere/index.html) / License: GPL-3
-jsonlite (https://cran.r-project.org/web/packages/jsonlite/index.html) / License: MIT
-yaml (https://cran.r-project.org/web/packages/yaml/index.html) / License: BSD 3
-randomForest (https://cran.r-project.org/web/packages/randomForest/index.html) / License: GPL-2, GPL-3
-plumber (https://cran.r-project.org/web/packages/plumber/index.html) / License: MIT
++ The following R packages were used in the project:
++ sf (https://cran.uni-muenster.de/web/packages/sf/index.html) / License: GPL-2, MIT
++ raster (https://mran.microsoft.com/web/packages/raster/index.html) / License: GPL-3
++ terra https://cran.r-project.org/web/packages/terra/index.html) / License: GPL-3
++ rstac (https://cran.r-project.org/web/packages/rstac/index.html) / License: MIT
++ gdalcubes (https://cran.r-project.org/web/packages/gdalcubes/index.html) / License: MIT
++ rgeos (https://cran.r-project.org/web/packages/rgeos/index.html) / License: GPL-2, GPL-3
++ rgdal (https://cran.r-project.org/web/packages/rgdal/index.html) / License: GPL-2, GPL-3
++ sp (https://cran.r-project.org/web/packages/sp/index.html) / License: GPL-2, GPL-3
++ caret (https://mran.microsoft.com/snapshot/2017-02-04/web/packages/caret/index.html) / License: GPL-2, GPL-3
++ CAST (https://cran.r-project.org/web/packages/CAST/index.html) / License: GPL-2, GPL-3
++ latticeExtra (https://cran.r-project.org/web/packages/latticeExtra/index.html) / License: GPL-2, GPL-3
++ foreach (https://cran.r-project.org/web/packages/foreach/index.html) / License: Apache-2
++ iterators (https://cran.r-project.org/web/packages/iterators/index.html) / License: Apache-2
++ doParallel (https://cran.r-project.org/web/packages/doParallel/index.html) /License: GPL-2
++ parallel (https://www.rdocumentation.org/packages/parallel/versions/3.6.2) /License: Part of R 3.6.2
++ magrittr (https://cran.r-project.org/web/packages/magrittr/index.html) / License: MIT
++ geosphere (https://cran.r-project.org/web/packages/geosphere/index.html) / License: GPL-3
++ jsonlite (https://cran.r-project.org/web/packages/jsonlite/index.html) / License: MIT
++ yaml (https://cran.r-project.org/web/packages/yaml/index.html) / License: BSD 3
++ randomForest (https://cran.r-project.org/web/packages/randomForest/index.html) / License: GPL-2, GPL-3
++ plumber (https://cran.r-project.org/web/packages/plumber/index.html) / License: MIT
 
 ## Frontend/Backend
-"axios": "^0.24.0"                 // Library for http requests
-"cookie-parser": "~1.4.4"            // Library to Parse Cookie header
-"core-js": "^3.19.1"                // Modular standard library for JavaScript
-"debug": "~2.6.9"                // A tiny JavaScript debugging utility
-"express": "~4.16.1"                // Express routing middleware
-"file-saver": "^2.0.5"                // Library to save files on the client-side
-"filereader": "^0.10.3"                // Library to read a glob of file
-"fs": "0.0.1-security"                // Library for file system functionality
-"geojson-validation": "^1.0.2"            // Library to check valid JSON objects
-"georaster": "^1.5.6"                // Wrapper around Georeferenced Rasters
-"georaster-layer-for-leaflet": "^3.5.0"        // Library to display geotiffs on Leaflet
-"geotiff": "^1.0.9"                // Library for GeoTIFF image decoding in Javascript
-"http-errors": "~1.6.3"                // Create HTTP errors for Express, Koa, Connect, etc. with ease
-"leaflet-geotiff-2": "^1.1.0"            // A LeafletJS plugin for displaying geoTIFF raster data
-"morgan": "~1.9.1"                // HTTP request logger middleware for node.js
-"multer": "^1.4.4"                 // Library for local file management
-"node-scp": "0.0.16"                // A lightweight, fast and secure module to perform SCP commands for NodeJS based on SSH2
-"nodemon": "^2.0.15"                // library for Simple monitor script for use during development of a node.js app.
-"plotty": "^0.4.7"                // library for helping plot 2D data
-"pug": "^3.0.2"                    // template engine for Node. js
-"scp": "0.0.3"                    // Library for connecting and exchanging files with an AWS instance via scp
++ "axios": "^0.24.0"                 // Library for http requests
++ "cookie-parser": "~1.4.4"            // Library to Parse Cookie header
++ "core-js": "^3.19.1"                // Modular standard library for JavaScript
++ "debug": "~2.6.9"                // A tiny JavaScript debugging utility
++ "express": "~4.16.1"                // Express routing middleware
++ "file-saver": "^2.0.5"                // Library to save files on the client-side
++ "filereader": "^0.10.3"                // Library to read a glob of file
++ "fs": "0.0.1-security"                // Library for file system functionality
++ "geojson-validation": "^1.0.2"            // Library to check valid JSON objects
++ "georaster": "^1.5.6"                // Wrapper around Georeferenced Rasters
++ "georaster-layer-for-leaflet": "^3.5.0"        // Library to display geotiffs on Leaflet
++ "geotiff": "^1.0.9"                // Library for GeoTIFF image decoding in Javascript
++ "http-errors": "~1.6.3"                // Create HTTP errors for Express, Koa, Connect, etc. with ease
++ "leaflet-geotiff-2": "^1.1.0"            // A LeafletJS plugin for displaying geoTIFF raster data
++ "morgan": "~1.9.1"                // HTTP request logger middleware for node.js
++ "multer": "^1.4.4"                 // Library for local file management
++ "node-scp": "0.0.16"                // A lightweight, fast and secure module to perform SCP commands for NodeJS based on SSH2
++ "nodemon": "^2.0.15"                // library for Simple monitor script for use during development of a node.js app.
++ "plotty": "^0.4.7"                // library for helping plot 2D data
++ "pug": "^3.0.2"                    // template engine for Node. js
++ "scp": "0.0.3"                    // Library for connecting and exchanging files with an AWS instance via scp
 
 
