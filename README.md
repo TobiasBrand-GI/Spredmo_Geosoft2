@@ -58,6 +58,8 @@ Describes the resolution of the AOI in pixels. the number of pixels in x directi
 ## Step 1: Choose your model or training data
 Select here the option if you already have a trained model or if you only have training data.
 
+![alt text]()
+
 ## Step 2: Choose your file
 Choose your file that you want to send to the server, either a model or train data polygons. The validation will check the file type according to your selection from step 1.
 
