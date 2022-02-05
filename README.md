@@ -55,11 +55,40 @@ Describes the resolution of the AOI in pixels. the number of pixels in x directi
 
 # Workflow
 
+## Step 1: Choose your model or training data
+Select here the option if you already have a trained model or if you only have training data.
+
+## Step 2: Choose your file
+Choose your file that you want to send to the server, either a model or train data polygons. The validation will check the file type according to your selection from step 1.
+
+## Step 3: Select your area of interest
+Select your area of interest for which you want the server to calculate the results. This code must be a valid rectangle GeoJSON feature.
+You can either post a code string in the input field
+
+Or you can draw a rectangle on the leaflet map.
+
+## Step 4: Choose your time window
+Select a start and end day for the satellite picture dates. Our validation will fetch any wrong or non-processable inputs.
+
+
+## Step 5: Select the desired resolution and the Cloudcover
+Now you can select your resolution of the satellite images and result pictures. We recommend not to use high resolutions for big data sets. You can also select the cloud coverage of the satellite pictures.
+
+
+## Step 6: Submit and process will start
+Now, when all input is correct and filled, you can submit your data and the server will do the rest of the work. Please keep in mind: These calculations are very complex, so the results may need some time to appear on your download page.
+
+
+## Step 7: View your results on the download page
+When all work is done, you can view your results on the leaflet map and choose to download which files you want. Now you can just click the download button and enjoy your newly generated results.
+
+
 # Output
 As output you get the following results which can be downloaded separately.
 + Area of Applicabilty (AOA) as a Tif-File.
 + Land use/ land cover classification as a Tif-File.
 + Recommended training Points to improve the model as JSON-File. 
++ The Model as RDS-File
 
 # Dependencies
 
