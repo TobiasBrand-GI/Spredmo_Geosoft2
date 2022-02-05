@@ -1,6 +1,17 @@
 # Spredmo_Geosoft2
 A Webtool to calculate the Area of Applicability of a given project
 
+# Authors
+Project of the course Geosoftware 2 at the Institute of Geoinformatics in Münster  by Tobias Brand, Gustav Freiherr von Arnim, Thomas Kujawa, Simon Meißner, Jan Hoping 
+
+# General information
+We will use a Land-use/landcover classifications based on Sentinel-2A EO-data.
+Machine learning algorithms will be used for the classification.
+The evaluation is done by the Dissimilarity Index or the Area of Applicability.
+The AoA makes it possible to determine whether the trained model is applicable to the investigated area is applicable. The Dissimilarity Index makes statements about how similar the trained model is to the investigated area.
+The user has the possibility to either use an already trained model or to upload training data on the basis of which a trained model is created.
+
+
 ## Installation
 Our software supports multiple devices and operating systems due to the usage of Docker.
 To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
