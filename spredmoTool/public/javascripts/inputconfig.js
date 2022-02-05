@@ -54,8 +54,6 @@ function validateTimeInput(){
   let endDay = new Date(document.getElementById("endDay").value);
   let today = Date.now();
   let minDay = new Date("2016-01-01");
-  console.log(startDay, endDay, today, minDay)
-  console.log((endDay-startDay))
   // Check if end day was not before start day
   if(startDay!="" && endDay!=""){
     if(startDay>endDay){     

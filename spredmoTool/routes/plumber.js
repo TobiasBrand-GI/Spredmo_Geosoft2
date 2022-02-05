@@ -9,7 +9,6 @@ const gjv = require("geojson-validation"); // GeoJSON Validator
 
 // Variables for saving input data between API calls
 let fileNames = new Array();
-let serverFileNames = new Array();
 let ui_Body;
 let fileName;
 
@@ -43,10 +42,16 @@ router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
  * Validates user input. If validation fail, redirects to the index page.
  * Fetch the result URLs and download the files.
  */
-router.get('/results',function(req, res) {
+router.get('/results',async function(req, res) {
   let radioButton = ui_Body.modelInput;
   let mime = fileName.split(".")[1];
-  new Date('1995-12-17T03:24:00')
+
+  // variables for API strings
+  var start= (ui_Body.startDay).toString();
+  var end = (ui_Body.endDay).toString();
+  var clouds = ((ui_Body.myRange)*10);
+  var resolution = ui_Body.resolution;
+
   try{
     // Validate GeoJSON of area of interest
     if(gjv.valid(JSON.parse(ui_Body.geoJSONInput))===false){  
@@ -62,12 +67,20 @@ router.get('/results',function(req, res) {
         // Check for correct MIME types
         if(mime==="rds" || mime==="RDS"){
           // upload moddel file to AWS
-          upload("./tmp/"+fileName, "model", "rds", "./tmp/aoi.geojson");
-          axios.post('http://127.0.0.1:6516/aoamodel', {
-            body:'[{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_model": "tmp/test_model.rds","path_aoi": "tmp/test_aoi.geojson"}]'
+          await upload("./tmp/"+fileName, "model", "rds", "./tmp/aoi.geojson");
+          axios({
+            method:'post',
+            url:'http://ec2-35-86-197-46.us-west-2.compute.amazonaws.com:8780/aoamodel',
+            headers:{'Content-Type': 'text/plain'},
+            data:'[{"cloud_cover": '+clouds+',"start_day": "'+start+'","end_day": "'+end+'","resolution": '+resolution+',"path_model": "tmp/model.rds","path_aoi": "tmp/aoi.geojson"}]'
           })
-          .then(response => {
-            res.send(response.data)
+          .then(async function(response){
+            await download("/"+response.data[0][0], "public/images/final_model.rds")
+            await download("/"+response.data[1][0], "public/images/lulc-prediction.tif")
+            await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
+            await download("/"+response.data[3][0], "public/images/aoa.tif")
+            await download("/"+response.data[4][0], "public/images/sample_points.json")
+            res.json({success:true, message:"Calculation successfull!"})
           })
           .catch(error => {
             console.log(error);
@@ -81,12 +94,20 @@ router.get('/results',function(req, res) {
         // Check for correct MIME types
         if(mime==="geojson" || mime==="GEOJSON" || mime==="gpkg" || mime==="GPKG"){
           // Upload train data to AWS
-          upload("./tmp/"+fileName, "train", mime, "./tmp/aoi.geojson");
-          axios.post('http://127.0.0.1:6516/aoamodel', {
-            body:'[{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_model": "tmp/test_model.rds","path_aoi": "tmp/test_aoi.geojson"}]'
+          await upload("./tmp/"+fileName, "tdata", mime, "./tmp/aoi.geojson");
+          axios({
+            method:'post',
+            url:'http://ec2-35-86-197-46.us-west-2.compute.amazonaws.com:8780/aoatdata',
+            headers:{'Content-Type': 'text/plain'},
+            data:'[{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_tdata": "tmp/tdata.geojson","path_aoi": "tmp/aoi.geojson"}]'
           })
-          .then(response => {
-            res.send(response.data)
+          .then(async function(response){
+            await download("/"+response.data[0][0], "public/images/final_model.rds")
+            await download("/"+response.data[1][0], "public/images/lulc-prediction.tif")
+            await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
+            await download("/"+response.data[3][0], "public/images/aoa.tif")
+            await download("/"+response.data[4][0], "public/images/sample_points.json")
+            res.json({success:true, message:"Calculation successfull!"})
           })
           .catch(error => {
             console.log(error);
@@ -117,7 +138,7 @@ async function download(serverFile, localPath){
     username: 'ubuntu', //username to authenticate
     privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
   }).then(client => {
-    client.downloadFile('/tmpextern/'+serverFile, localPath)
+    client.downloadFile(serverFile, localPath)
       .then(response => {
         client.close() // remember to close connection after you finish
       })
@@ -143,15 +164,8 @@ async function upload(localPath, file, type, jsonPath){
       username: 'ubuntu', //username to authenticate
       privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
     })
-    // Create uniquie file name
-    // let uniqueStamp = createFileNames(Date.now());
-    // let newFileName = file+"_"+uniqueStamp+"."+type;
-    // let newJSONName = 
-    // Save file name for the Plumber code
-    // serverFileNames.push(newFileName1);
-    // upload file
     await client.uploadFile(localPath, "/tmpextern/"+file+"."+type);
-    await client.uploadFile(jsonPath, '/tmpextern/'+file+'_aoi.geojson');
+    await client.uploadFile(jsonPath, '/tmpextern/aoi.geojson');
     client.close()
     // Delete copied file locally to free memory
     fs.unlink(localPath,(err)=>{
@@ -161,30 +175,9 @@ async function upload(localPath, file, type, jsonPath){
     fs.unlink(jsonPath,(err)=>{
       console.log(err)
     })
-
   } catch (e) {
       console.log(e)
   }
-}
-
-/**
- * Takes a unix timestemp to convert it to String of numbers to ensure unique file names
- * @param {*} unixTime unix timestemp
- * @returns String of Numbers encoding the day and time with Year, Month, Day, Hour, Minutes and Seconds
- */
- function createFileNames(unixTime){
-  let dateObject = new Date(unixTime);
-  let converted=dateObject.toLocaleTimeString([],{year:'2-digit', month:'2-digit', day:'2-digit', hour: '2-digit', minute:'2-digit',second:"2-digit"});
-  for (i=0; i<2; i++){
-      converted=converted.replace('.','');
-  }
-  converted=converted.replace(' ','');
-  converted=converted.replace(',','_');
-  for (i=0; i<2; i++){
-      converted=converted.replace(':','');
-  }
-  console.log(converted)
-  return converted;
 }
 
 module.exports = router;
