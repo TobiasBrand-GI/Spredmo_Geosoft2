@@ -15,7 +15,6 @@ function changeInputHTML(choice){
     else if(choice=="data"){
 
         changeFileUpload("ihre Trainingsdaten als GeoJSON oder Geopackage", ".geojson", ".gpkg");
-
     }
 }
 
@@ -31,8 +30,6 @@ function changeFileUpload(placeholder, type1, type2){
 
     let h=document.getElementById("fileHeader");
     h.innerHTML="Fügen Sie hier "+placeholder+" ein";
-
-
 }
 
 /**

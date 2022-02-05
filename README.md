@@ -134,21 +134,20 @@ As output you get the following results which can be downloaded separately.
 + "core-js": "^3.19.1"                // Modular standard library for JavaScript
 + "debug": "~2.6.9"                // A tiny JavaScript debugging utility
 + "express": "~4.16.1"                // Express routing middleware
-+ "file-saver": "^2.0.5"                // Library to save files on the client-side
-+ "filereader": "^0.10.3"                // Library to read a glob of file
 + "fs": "0.0.1-security"                // Library for file system functionality
 + "geojson-validation": "^1.0.2"            // Library to check valid JSON objects
 + "georaster": "^1.5.6"                // Wrapper around Georeferenced Rasters
 + "georaster-layer-for-leaflet": "^3.5.0"        // Library to display geotiffs on Leaflet
 + "geotiff": "^1.0.9"                // Library for GeoTIFF image decoding in Javascript
 + "http-errors": "~1.6.3"                // Create HTTP errors for Express, Koa, Connect, etc. with ease
-+ "leaflet-geotiff-2": "^1.1.0"            // A LeafletJS plugin for displaying geoTIFF raster data
 + "morgan": "~1.9.1"                // HTTP request logger middleware for node.js
 + "multer": "^1.4.4"                 // Library for local file management
 + "node-scp": "0.0.16"                // A lightweight, fast and secure module to perform SCP commands for NodeJS based on SSH2
 + "nodemon": "^2.0.15"                // library for Simple monitor script for use during development of a node.js app.
-+ "plotty": "^0.4.7"                // library for helping plot 2D data
 + "pug": "^3.0.2"                    // template engine for Node. js
 + "scp": "0.0.3"                    // Library for connecting and exchanging files with an AWS instance via scp
 
-
+# License
+This software is distributed as an open source software under the ISC license. Users are allowed to edit, process and use our software,
+as long as they refer to us via a copyright trademark.
+More information [here.](https://opensource.org/licenses/ISC)

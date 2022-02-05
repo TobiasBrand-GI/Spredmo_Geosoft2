@@ -82,6 +82,15 @@ router.get('/results',function(req, res) {
         if(mime==="geojson" || mime==="GEOJSON" || mime==="gpkg" || mime==="GPKG"){
           // Upload train data to AWS
           upload("./tmp/"+fileName, "train", mime, "./tmp/aoi.geojson");
+          axios.post('http://127.0.0.1:6516/aoamodel', {
+            body:'[{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_model": "tmp/test_model.rds","path_aoi": "tmp/test_aoi.geojson"}]'
+          })
+          .then(response => {
+            res.send(response.data)
+          })
+          .catch(error => {
+            console.log(error);
+          })
         }else{
           // if not correct, send json with error message
           res.json({success:false, message:"File is not an spatial data file in .geojson or .gpkg format!"})
@@ -100,7 +109,7 @@ router.get('/results',function(req, res) {
 /**
  * 
  */
-async function download(){
+async function download(serverFile, localPath){
   try{
     const client =  await Client({
     host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
@@ -108,7 +117,7 @@ async function download(){
     username: 'ubuntu', //username to authenticate
     privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
   }).then(client => {
-    client.downloadFile('/tmpextern/aoa.tif', 'public/images/test.tif')
+    client.downloadFile('/tmpextern/'+serverFile, localPath)
       .then(response => {
         client.close() // remember to close connection after you finish
       })
