@@ -11,8 +11,12 @@ The evaluation is done by the Dissimilarity Index or the Area of Applicability.
 The AoA makes it possible to determine whether the trained model is applicable to the investigated area is applicable. The Dissimilarity Index makes statements about how similar the trained model is to the investigated area.
 The user has the possibility to either use an already trained model or to upload training data on the basis of which a trained model is created.
 
-# Installation
+## Installation
 Our software supports multiple devices and operating systems due to the usage of Docker.
+To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
++ Install Docker for servers
++ Install an R work environment on your instance
++ Start up the Docker Container
 
 ## Frontend
 
@@ -32,14 +36,9 @@ and copy a valid key.pem into the "keys" folder.
  
 ## Backend
  
-To install the backend part of the "Spredmo-Tool" on your AWS EC2-instance, you need to:
-+ Install Docker for servers
-+ create a folder in the root directory called "tmpextern".
-+ run the following docker command:
-
-```docker run -d --rm -p 8780:8000 -v /tmpextern:/app/tmp --name SpredmoBackend simonmeissner/geosoft2spredmo:backend ```
-
-make sure that port 8780 of the AWS EC2-instance is opened.
+  and copy a valid key.pem into the
+  
+ ```SPREDMO_GEOSOFT2/spredmoTool/keys ``` folder.
  
 # Requirements, Input Data
 
@@ -71,32 +70,42 @@ Describes the resolution of the AOI in pixels. the number of pixels in x directi
 ## Step 1: Choose your model or training data
 Select here the option if you already have a trained model or if you only have training data.
 
-![alt text]()
+![alt text](/readme_pics/step1.jpg)
 
 ## Step 2: Choose your file
 Choose your file that you want to send to the server, either a model or train data polygons. The validation will check the file type according to your selection from step 1.
+
+![alt text](/readme_pics/step2.jpg)
 
 ## Step 3: Select your area of interest
 Select your area of interest for which you want the server to calculate the results. This code must be a valid rectangle GeoJSON feature.
 You can either post a code string in the input field
 
+![alt text](/readme_pics/step3.jpg)
+
 Or you can draw a rectangle on the leaflet map.
+
+![alt text](/readme_pics/step3_map.jpg)
 
 ## Step 4: Choose your time window
 Select a start and end day for the satellite picture dates. Our validation will fetch any wrong or non-processable inputs.
 
+![alt text](/readme_pics/step4.jpg)
 
 ## Step 5: Select the desired resolution and the Cloudcover
 Now you can select your resolution of the satellite images and result pictures. We recommend not to use high resolutions for big data sets. You can also select the cloud coverage of the satellite pictures.
 
+![alt text](/readme_pics/step5.jpg)
 
 ## Step 6: Submit and process will start
 Now, when all input is correct and filled, you can submit your data and the server will do the rest of the work. Please keep in mind: These calculations are very complex, so the results may need some time to appear on your download page.
 
+![alt text](/readme_pics/step6.jpg)
 
 ## Step 7: View your results on the download page
 When all work is done, you can view your results on the leaflet map and choose to download which files you want. Now you can just click the download button and enjoy your newly generated results.
 
+![alt text](/readme_pics/step7.jpg)
 
 # Output
 As output you get the following results which can be downloaded separately.
@@ -137,21 +146,20 @@ As output you get the following results which can be downloaded separately.
 + "core-js": "^3.19.1"                // Modular standard library for JavaScript
 + "debug": "~2.6.9"                // A tiny JavaScript debugging utility
 + "express": "~4.16.1"                // Express routing middleware
-+ "file-saver": "^2.0.5"                // Library to save files on the client-side
-+ "filereader": "^0.10.3"                // Library to read a glob of file
 + "fs": "0.0.1-security"                // Library for file system functionality
 + "geojson-validation": "^1.0.2"            // Library to check valid JSON objects
 + "georaster": "^1.5.6"                // Wrapper around Georeferenced Rasters
 + "georaster-layer-for-leaflet": "^3.5.0"        // Library to display geotiffs on Leaflet
 + "geotiff": "^1.0.9"                // Library for GeoTIFF image decoding in Javascript
 + "http-errors": "~1.6.3"                // Create HTTP errors for Express, Koa, Connect, etc. with ease
-+ "leaflet-geotiff-2": "^1.1.0"            // A LeafletJS plugin for displaying geoTIFF raster data
 + "morgan": "~1.9.1"                // HTTP request logger middleware for node.js
 + "multer": "^1.4.4"                 // Library for local file management
 + "node-scp": "0.0.16"                // A lightweight, fast and secure module to perform SCP commands for NodeJS based on SSH2
 + "nodemon": "^2.0.15"                // library for Simple monitor script for use during development of a node.js app.
-+ "plotty": "^0.4.7"                // library for helping plot 2D data
 + "pug": "^3.0.2"                    // template engine for Node. js
 + "scp": "0.0.3"                    // Library for connecting and exchanging files with an AWS instance via scp
 
-
+# License
+This software is distributed as an open source software under the ISC license. Users are allowed to edit, process and use our software,
+as long as they refer to us via a copyright trademark.
+More information [here.](https://opensource.org/licenses/ISC)
