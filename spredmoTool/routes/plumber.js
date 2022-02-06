@@ -52,9 +52,12 @@ router.get('/results',async function(req, res) {
   var clouds = ((ui_Body.myRange)*10);
   var resolution = ui_Body.resolution;
 
+  console.log("PlUMBER CALLED")
+
   try{
     // Validate GeoJSON of area of interest
-    if(gjv.valid(JSON.parse(ui_Body.geoJSONInput))===false){  
+    let aoiJSON = JSON.parse(ui_Body.geoJSONInput);
+    if(gjv.valid(aoiJSON)===false){  
       res.json({success:false, message:"Your area of interest GeoJSON Code was invalid!"})
     }
     // Else case if validation was successfull
@@ -80,7 +83,8 @@ router.get('/results',async function(req, res) {
             await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
             await download("/"+response.data[3][0], "public/images/aoa.tif")
             await download("/"+response.data[4][0], "public/images/sample_points.json")
-            res.json({success:true, message:"Calculation successfull!"})
+            console.log(response.data[5])
+            res.json({success:true, message:"Calculation successfull!", aoi:aoiJSON})
           })
           .catch(error => {
             console.log(error);
@@ -106,8 +110,14 @@ router.get('/results',async function(req, res) {
             await download("/"+response.data[1][0], "public/images/lulc-prediction.tif")
             await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
             await download("/"+response.data[3][0], "public/images/aoa.tif")
-            await download("/"+response.data[4][0], "public/images/sample_points.json")
-            res.json({success:true, message:"Calculation successfull!"})
+            if(response.data[5]===1){
+              fs.existsSync("public/images/sample_points.json")
+              fs.unlink("public/images/sample_points.json",(err)=>{
+                console.log(err)
+              })
+              await download("/"+response.data[4][0], "public/images/sample_points.json")
+            }
+            res.json({success:true, message:"Calculation successfull!", aoi:aoiJSON, classes:response.data[6], status:response.data[5]})
           })
           .catch(error => {
             console.log(error);
@@ -125,6 +135,35 @@ router.get('/results',async function(req, res) {
     // Catch any error with requests, API calls and file interactions
     res.json({success:false, message:"Error: "+e})
   }
+})
+
+/**
+ * API route to get the file selected by the user and load it into the Node.js environment for further use.
+ * After loading is finished, it redirects to the download/ results page.
+ */
+ router.get('/clearServer', function(req, res) {
+  axios({
+    method:'get',
+    url:'http://ec2-35-86-197-46.us-west-2.compute.amazonaws.com:8780/refresh',
+  })
+  .then(function(response){
+    if(response.status===200){
+      res.json({success:true,message:"Server files cleared"})
+    }else{
+      res.json({success:false,message:"An Error occured"})
+    }
+  })
+})
+
+router.get('/loadSamples', function(req, res) {
+  fs.readFile('./public/images/sample_points.json','utf8', (err, jsonString) => {
+    if (err) {
+        console.log("File read failed:", err)
+        return
+    }
+    console.log('File data:', jsonString) 
+    res.json({success:true, message:"Calculation successfull!", samples:jsonString})
+  })
 })
 
 /**
@@ -170,7 +209,6 @@ async function upload(localPath, file, type, jsonPath){
     // Delete copied file locally to free memory
     fs.unlink(localPath,(err)=>{
       console.log(err)
-      
     })
     fs.unlink(jsonPath,(err)=>{
       console.log(err)
