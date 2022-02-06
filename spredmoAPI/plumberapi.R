@@ -169,7 +169,7 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
   # print(head(extr_sp))
   #print(head(extr_raster))
   message("DONE: merge vector and raster")
-  saveRDS(extr, file= path_for_combined_data)   #"C:/Users/49157/Documents/GitHub/Spredmo_Geosoft2/R-folder/result_files/merged_trainData.RDS")
+  saveRDS(extr, file= path_for_combined_data)
   message("DONE: save combined Data as RDS")
   warning(">>> check return :) ...")
   return(extr_sp)
@@ -182,28 +182,40 @@ calculate_random_points <- function(Areaofinterest, AOA) {
                        proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
   
   ##AOA_raster in Polygon umwandeln
-  AOA_Polygon <-rasterToPolygons(AOA, fun=function(x){x==1}, n=4, na.rm=TRUE, digits=12, dissolve=FALSE) ## passt
+  AOA_Polygon <-rasterToPolygons(AOA, fun=function(x){x==1}, n=4, na.rm=TRUE, digits=12, dissolve=FALSE)
   ##AOA von AOI abziehen
-  clipped <- AOI_Polygon - AOA_Polygon  
+  clipped <- AOI_Polygon - AOA_Polygon
   
-  ##Anzahl an Punkten skalierend zur Groessee der AOI
-  get_area_clipped<-areaPolygon(clipped) 
-  quantity_points<-get_area_clipped*0.00001
+  check <- AOI_Polygon@polygons[[1]]@area - AOA_Polygon@polygons[[1]]@area
   
-  ##random suggested points to improve AOA
-  pts <- spsample(clipped, quantity_points, type = 'random')
-  
-  pts1 <- data.frame(x=pts$x,y=pts$y) 
-  coordinates(pts1) <- ~x+y
-  
-  #als Liste ausgeben
-  Samplepoint_coordinates_list <-coordinates(pts1)
-  ##swap latitude and longitude
-  Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
-  #Samplepointstojson
-  Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
-  message("DONE: calculate_random_points")
-  return(Samplepoint_coordinates_as_Json)
+  if(check > 0) { 
+    
+    ##Anzahl an Punkten skalierend zur Groessee der AOI
+    get_area_clipped<-areaPolygon(clipped) 
+    quantity_points<-get_area_clipped*0.00001
+    
+    if(quantity_points > 30) {
+      quantity_points <- 30
+    } 
+    ##random suggested points to improve AOA
+    pts <- spsample(clipped, quantity_points, type = 'random')
+    
+    pts1 <- data.frame(x=pts$x,y=pts$y) 
+    coordinates(pts1) <- ~x+y
+    
+    #als Liste ausgeben
+    Samplepoint_coordinates_list <-coordinates(pts1)
+    ##swap latitude and longitude
+    Samplepoint_coordinates_list <- Samplepoint_coordinates_list[,c("y", "x")]
+    #Samplepointstojson
+    Samplepoint_coordinates_as_Json=toJSON(Samplepoint_coordinates_list,pretty=TRUE,auto_unbox=TRUE)
+    message("DONE: calculate_random_points")
+    return(Samplepoint_coordinates_as_Json)
+    
+    
+  } else { # AOA deckt komplette AOI ab. Also brauchen wir keine sample_points
+    return("keine punkte")
+  }
 }
 
 
@@ -263,6 +275,19 @@ function(req, res) {
 }
 
 
+#* Endpunkt um Speicher zu leeren
+#* @get /refresh
+#* @preempt cors
+function() {
+
+    folder <- "/app/tmp"
+    files <- list.files(folder, include.dirs = F, full.names = T, recursive = T)
+    for(file in files) {
+      file.remove(file)
+    }
+}
+
+
 #* @plumber
 function(pr) {
   pr %>%
@@ -272,11 +297,12 @@ function(pr) {
 
 
 
-
+# function which is called in case of model provided
 start_calc_with_model <- function(body) {
-
+  
   start_time <- Sys.time()
   message("start processing")
+  
   
   request_body <- fromJSON(body)
   
@@ -287,7 +313,8 @@ start_calc_with_model <- function(body) {
   path_model <- request_body$path_model
   path_aoi <- request_body$path_aoi
   
-  
+  #set status for samplepoints
+  statuspoints <- 1
   
   # read files at paths
   model <- readRDS(path_model)
@@ -297,7 +324,6 @@ start_calc_with_model <- function(body) {
   
   path_for_satelite_for_aoi = "tmp"
   prefix_for_geoTiff_for_aoi = "satellite_for_aoi_"
-  
   
   
   ##### start calc
@@ -324,7 +350,7 @@ start_calc_with_model <- function(body) {
   
   names(out_sentinell_aoi) <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL") # rename bands
   message("DONE: rename bands of raster stack")
-
+  
   seq_for_loop <- 1:length(names(out_sentinell_aoi)) # with the last band, it's SCL
   for (i in seq_for_loop) {
     print(paste("band iteration ", i))
@@ -342,15 +368,26 @@ start_calc_with_model <- function(body) {
   AOA <- aoa(out_sentinell_aoi, model, cl=cl)
   message("DONE: aoa")
   
+  # get model classes
+  classes <- model$levels
+  
   saveRDS(model, "tmp/final_model.rds")
   writeRaster(prediction, filename = "tmp/lulc-prediction.tif", overwrite=TRUE)
   writeRaster(AOA$DI, filename = "tmp/di_of_aoa.tif", overwrite=TRUE)
   writeRaster(AOA$AOA, filename = "tmp/aoa.tif", overwrite=TRUE)
   
-  sample_points <- calculate_random_points(aoi, AOA$AOA)
-  write(sample_points, "tmp/sample_points.json") #check if correct
+  message("DONE: save_outputs: model, prediction, aoa")
   
-  message("DONE: save_outputs: model, prediction, aoa and samplepoints")
+  # sample points
+  sample_points <- calculate_random_points(aoi, AOA$AOA)
+  if(sample_points == "keine punkte") {
+    statuspoints <- 0
+    message("INFO: no sample_points were created")
+  } else{
+    statuspoints <- 1
+    write(sample_points, "tmp/sample_points.json") #check if correct
+    message("DONE: sample_points were created")
+  }
   
   #write external paths
   modelpath <- "tmpextern/final_model.rds"
@@ -358,23 +395,27 @@ start_calc_with_model <- function(body) {
   dipath <- "tmpextern/di_of_aoa.tif"
   aoapath <- "tmpextern/aoa.tif"
   samplepointspath <- "tmpextern/sample_points.json"
-
+  
+  #####
+  ### printing processing time
   end_time <- Sys.time()
-  time_difference <- paste("total processing time: ", round(100000 * (end_time - start_time)) / 100000, " Minutes")
-  print(time_difference)  
+  time_difference <- end_time - start_time
+  print(time_difference)
   
   return(list(
     modelpath,
     lulcpath,
     dipath,
     aoapath,
-    samplepointspath
+    samplepointspath,
+    status_points,
+    paste(classes)
   ))
 }
 
 
 
-
+# function which is called in case of training data provided
 start_calc_with_tdata <- function(body) {
 
   start_time <- Sys.time()
@@ -388,6 +429,9 @@ start_calc_with_tdata <- function(body) {
   resolution <- as.numeric(request_body$resolution)
   path_tdata <- request_body$path_tdata
   path_aoi <- request_body$path_aoi
+  
+  #set status for samplepoints
+  statuspoints <- 1
   
   # read files at paths
   tdata <- st_read(path_tdata)
@@ -489,16 +533,26 @@ start_calc_with_tdata <- function(body) {
   AOA <- aoa(sentinell_aoi, own_model, cl=cl)
   message("DONE: aoa")
   
+  # get model classes
+  classes <- own_model$levels
+  
   saveRDS(own_model, "tmp/final_model.rds")
   writeRaster(prediction, filename = "tmp/lulc-prediction.tif", overwrite=TRUE)
   writeRaster(AOA$DI, filename = "tmp/di_of_aoa.tif", overwrite=TRUE)
   writeRaster(AOA$AOA, filename = "tmp/aoa.tif", overwrite=TRUE)
   
+  message("DONE: save_outputs: model, prediction, aoa")
   
+  # sample points
   sample_points <- calculate_random_points(aoi, AOA$AOA)
-  write(sample_points, "tmp/sample_points.json") #check if correct
-  
-  message("DONE: save_outputs: model, prediction, aoa and samplepoints")
+  if(sample_points == "keine punkte") {
+    statuspoints <- 0
+    message("INFO: no sample_points were created")
+  } else{
+    statuspoints <- 1
+    write(sample_points, "tmp/sample_points.json") #check if correct
+    message("DONE: sample_points were created")
+  }
   
   #write external paths
   modelpath <- "tmpextern/final_model.rds"
@@ -510,9 +564,8 @@ start_calc_with_tdata <- function(body) {
   #####
   ### printing processing time
   end_time <- Sys.time()
-  time_difference <- paste("total processing time: ",round(100000 * (end_time - start_time)) / 100000, " Minutes")
+  time_difference <- end_time - start_time
   print(time_difference)
-
  
   
   return(list(
@@ -520,7 +573,8 @@ start_calc_with_tdata <- function(body) {
     lulcpath,
     dipath,
     aoapath,
-    samplepointspath
+    samplepointspath,
+    status_points,
+    paste(classes)
   ))
-
 }
