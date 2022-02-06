@@ -13,14 +13,9 @@ The user has the possibility to either use an already trained model or to upload
 
 ## Installation
 Our software supports multiple devices and operating systems due to the usage of Docker.
-To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
-+ Install Docker for servers
-+ Install an R work environment on your instance
-+ Start up the Docker Container
 
 ## Frontend
 
-For the Frontend part of the app, you need to install Docker on your local machine or web-hosting server and simply run the Docker command.
 To install the frontend part of the "Spredmo-Tool" on your local machine you need to:
 + Install Docker (Docker Desktop)
 + run the following docker command:
@@ -35,10 +30,13 @@ start your Docker container and run
 and copy a valid key.pem into the "keys" folder.
  
 ## Backend
- 
-  and copy a valid key.pem into the
-  
- ```SPREDMO_GEOSOFT2/spredmoTool/keys ``` folder.
+
+To install the backend part of the "Spredmo-Tool" on your AWS EC2 instance, you need to:
++ Install Docker server
++ create a folder in the root directory called "tmpextern"
++ run the following docker command:
+
+```docker run --rm -p 8780:8000 -v /tmpextern:/app/tmp --name SpredmoBackend simonmeissner/geosoft2spredmo:backend```
  
 # Requirements, Input Data
 
