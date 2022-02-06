@@ -1,27 +1,45 @@
 function getRResults() {
-        return $.ajax({
-        url: "/plumber/results",
+    return $.ajax({
+    url: "/plumber/results",
+    method: "GET",
+    })
+}
+
+function clearServer(){
+    return $.ajax({
+        url: "/plumber/clearServer",
         method: "GET",
         })
 }
 
+let tiffUrls = ["images/lulc-prediction.tif","images/di_of_aoa.tif","images/aoa.tif"]
+
 async function visualize_Results(){
-    try{
-        const res = await getRResults();
-        if(res.success===true){
-            console.log(res.message)
-            document.getElementById("loading").style.display="none";
-            document.getElementById("mapid").style.display="block";
-            document.getElementById("dwButton").disabled=false;
-            dmap.invalidateSize();
-            loadTIFF("images/aoa.tif");
-        }else{
-            alert(res.message);
-            window.location.href = "index.html";
-        }
-    }catch(err){
-        console.log(err)
-    }
+    // try{
+    //     const refresh = await clearServer();
+    //     if(refresh.success===true){
+    //         const res = await getRResults();
+            // if(res.success===true){
+                //console.log(res.message)
+                document.getElementById("loading").style.display="none";
+                document.getElementById("mapid").style.display="block";
+                document.getElementById("dwButton").disabled=false;
+                dmap.invalidateSize();
+                mainLeafletFunctionailty(tiffUrls,JSON.parse('{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-39.47525,65.578908],[-39.47525,65.619755],[-39.391479,65.619755],[-39.391479,65.578908],[-39.47525,65.578908]]]}}'), '["Wasser","Urban","Wald"]', 1 );//res.aoi res.status
+                
+    //         }else{
+    //             alert(res.message);
+    //             window.location.href = "index.html";
+    //         }
+    //     }else{
+    //         alert(refresh.message);
+    //         window.location.href = "index.html";
+    //     }
+        
+    // }catch(err){
+    //     console.log(err)
+    // }
+    
 }
 visualize_Results();
 
