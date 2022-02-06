@@ -32,10 +32,8 @@ const uploadDest = multer({storage:storage})
 router.post('/upload', uploadDest.single('modelFile'), function(req, res) {
   ui_Body=req.body; 
   fileNames.push(fileName); // Saving file name for later use
-
-  res.redirect("/download.html")
+  res.redirect("/download.html?mode=plumber")
 })
-
 
 /**
  * API call to send all necessary parameters and files via scp and axios to the Plumber API and AWS instance.
@@ -78,16 +76,25 @@ router.get('/results',async function(req, res) {
             data:'[{"cloud_cover": '+clouds+',"start_day": "'+start+'","end_day": "'+end+'","resolution": '+resolution+',"path_model": "tmp/model.rds","path_aoi": "tmp/aoi.geojson"}]'
           })
           .then(async function(response){
+            // Download all necessary files from the server
             await download("/"+response.data[0][0], "public/images/final_model.rds")
             await download("/"+response.data[1][0], "public/images/lulc-prediction.tif")
             await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
             await download("/"+response.data[3][0], "public/images/aoa.tif")
-            await download("/"+response.data[4][0], "public/images/sample_points.json")
-            console.log(response.data[5])
-            res.json({success:true, message:"Calculation successfull!", aoi:aoiJSON})
+            // Download json file. Due to async problems, this needs to be called seperatly
+            if(response.data[5]===1){
+              fs.existsSync("public/images/sample_points.json")
+              // delete possible old json files. Avoid cache problems
+              fs.unlink("public/images/sample_points.json",(err)=>{
+                console.log(err)
+              })
+              await download("/"+response.data[4][0], "public/images/sample_points.json")
+            }
+            res.json({success:true, message:"Calculation successfull!", aoi:aoiJSON, classes:response.data[6], status:response.data[5]})
           })
           .catch(error => {
             console.log(error);
+            res.json({success:false, message:"Error: "+e})
           })
         }else{
           // if not correct, send json with error message
@@ -110,8 +117,10 @@ router.get('/results',async function(req, res) {
             await download("/"+response.data[1][0], "public/images/lulc-prediction.tif")
             await download("/"+response.data[2][0], "public/images/di_of_aoa.tif")
             await download("/"+response.data[3][0], "public/images/aoa.tif")
+            // Download json file. Due to async problems, this needs to be called seperatly
             if(response.data[5]===1){
               fs.existsSync("public/images/sample_points.json")
+              // delete possible old json files. Avoid cache problems
               fs.unlink("public/images/sample_points.json",(err)=>{
                 console.log(err)
               })
@@ -121,6 +130,7 @@ router.get('/results',async function(req, res) {
           })
           .catch(error => {
             console.log(error);
+            res.json({success:false, message:"Error: "+e})
           })
         }else{
           // if not correct, send json with error message
@@ -138,15 +148,16 @@ router.get('/results',async function(req, res) {
 })
 
 /**
- * API route to get the file selected by the user and load it into the Node.js environment for further use.
- * After loading is finished, it redirects to the download/ results page.
+ * API route to clear the servers files to avoid memory overflow
  */
  router.get('/clearServer', function(req, res) {
+  // Call API specified via plumber
   axios({
     method:'get',
     url:'http://ec2-35-86-197-46.us-west-2.compute.amazonaws.com:8780/refresh',
   })
   .then(function(response){
+    // Catch any possible Errors
     if(response.status===200){
       res.json({success:true,message:"Server files cleared"})
     }else{
@@ -155,31 +166,63 @@ router.get('/results',async function(req, res) {
   })
 })
 
+/**
+ * Route to read and return the random sample points from a json file
+ */
 router.get('/loadSamples', function(req, res) {
+  // read file from a given path
   fs.readFile('./public/images/sample_points.json','utf8', (err, jsonString) => {
     if (err) {
         console.log("File read failed:", err)
         return
     }
-    console.log('File data:', jsonString) 
+    // return sample points
     res.json({success:true, message:"Calculation successfull!", samples:jsonString})
   })
 })
 
 /**
- * 
+ * Route to load demodata into the work folder
+ */
+ router.get('/loadDemo', function(req, res) {
+  // copy all necessary data into correct folder
+  fs.copyFile('./demodata/sample_points.json', './public/images/sample_points.json', (err) => {
+    if (err) throw err;
+  });
+  fs.copyFile('./demodata/aoa.tif', './public/images/aoa.tif', (err) => {
+    if (err) throw err;
+  });
+  fs.copyFile('./demodata/di_of_aoa.tif', './public/images/di_of_aoa.tif', (err) => {
+    if (err) throw err;
+  });
+  fs.copyFile('./demodata/final_model.rds', './public/images/final_model.rds', (err) => {
+    if (err) throw err;
+  });
+  fs.copyFile('./demodata/lulc-prediction.tif', './public/images/lulc-prediction.tif', (err) => {
+    if (err) throw err;
+  });
+    // return sample points
+    res.json({success:true, message:"Copy successfull!"})
+})
+
+/**
+ * Downloads a given file from an ec2-instance into a local repository
+ * @param {String} serverFile Path on the server of the file t download
+ * @param {String} localPath Path to local repository + new file name plus type
  */
 async function download(serverFile, localPath){
   try{
+    //connecting to AWS
     const client =  await Client({
     host: 'ec2-35-86-197-46.us-west-2.compute.amazonaws.com', //remote host ip 
     port: 22, //port used for scp 
     username: 'ubuntu', //username to authenticate
     privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
   }).then(client => {
+    // start donwload via scp client
     client.downloadFile(serverFile, localPath)
       .then(response => {
-        client.close() // remember to close connection after you finish
+        client.close() 
       })
       .catch(error => {console.log(error)})
   }).catch(e => console.log(e))
@@ -189,7 +232,7 @@ async function download(serverFile, localPath){
 }
 
 /**
- * Uploads a given local file to an AWS instance via scp. Autogenerate unique file names with a set prefix and a suffix acoording to the date.
+ * Uploads a given local file to an ec2-instance via scp. Autogenerate unique file names with a set prefix and a suffix acoording to the date.
  * @param {String} localPath Path to the local file to be uploaded to the AWS
  * @param {String} file Short prefix (model, train) for later name creation
  * @param {String} type MIME type of the file which should be uploaded
@@ -203,6 +246,7 @@ async function upload(localPath, file, type, jsonPath){
       username: 'ubuntu', //username to authenticate
       privateKey: fs.readFileSync('keys/key.pem'), // local relative path to your pem file
     })
+    // start upload via scp client
     await client.uploadFile(localPath, "/tmpextern/"+file+"."+type);
     await client.uploadFile(jsonPath, '/tmpextern/aoi.geojson');
     client.close()
