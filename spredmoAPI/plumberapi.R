@@ -10,7 +10,6 @@ library(rstac)
 library(gdalcubes)
 library(rgeos)
 library(rgdal)
-
 library(sp)
 library(caret)
 library(CAST)
@@ -67,7 +66,6 @@ get_sentinelDat_form_stac <- function(input_bbox, in_t0, in_t1) {
 # reference for meaning of bands: https://gdal.org/drivers/raster/sentinel2.html
 create_filtered_image_collection <- function(input_items, intpu_cloud_coverage) {
   assets <- c("B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-  # assets <- c("B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12","SCL")
   s2_collection <- stac_image_collection(input_items$features,
                                          asset_names = assets, 
                                          property_filter = function(x) {
@@ -83,7 +81,6 @@ generate_cube_view <- function(input_epsg_string, in_nx, in_t0, in_t1, in_bbox) 
   cube_view_for_data_cube <- cube_view(srs = input_epsg_string,
                                        dt="P1M", 
                                        nx = in_nx, #250, 
-                                       #ny = in_ny, #250, 
                                        aggregation = "mean", 
                                        resampling="near",
                                        keep.asp = TRUE, # derives ny from nx and bbox
@@ -136,7 +133,7 @@ save_data_as_geoTiff <- function(input_cube, input_storage_path, input_prefix) {
   message("this function takes some time:")
   write_tif(input_cube,
             dir = input_storage_path,
-            prefix = input_prefix, # basename(tempfile(pattern = input_prefix)),
+            prefix = input_prefix,
             overviews = FALSE,
             COG = TRUE,
             rsmpl_overview = "nearest",
@@ -156,18 +153,12 @@ combine_sentinel_with_trainingSites <- function(input_predictors_stack, input_tr
   spatRaster <- terra::rast(input_predictors_stack, subds=0, opts=NULL)
   message("DONE: transform to SpatRaster and SpatVector")
   
-  extr <- terra::extract(spatRaster, spatVector)     # function signatur like in terra-package
-  # extr <- raster::extract(spatRaster, spatVector, df=TRUE) # extract from raster works only with spatRaster and spatVector
+  extr <- terra::extract(spatRaster, spatVector)
+  
   # rename bands
   names(extr) <- c("ID","B02","B03","B04","B08","B06","B07","B8A","B11","B12","SCL")
-  # print(head(extr))
   input_trainingSites$Poly_ID <- 1:nrow(input_trainingSites) 
-  # extr_terra <- terra::merge(input_trainingSites, extr) #, by.x="ID", by.y="ID")
-  # print(head(extr_terra))
   extr_sp <- sp::merge(input_trainingSites, extr, all.x=TRUE, by.x="Poly_ID", by.y="ID")
-  #by = intersect(names(input_trainingSites), names(extr)), by.input_trainingSites = by, by.extr = by)
-  # print(head(extr_sp))
-  #print(head(extr_raster))
   message("DONE: merge vector and raster")
   saveRDS(extr, file= path_for_combined_data)
   message("DONE: save combined Data as RDS")
@@ -328,7 +319,7 @@ start_calc_with_model <- function(body) {
   
   ##### start calc
   ### this function calls are always needed
-  fitting_epsg_as_string <- paste('EPSG:4326') # find_right_crs(use_trainingSites) # function not needed any more
+  fitting_epsg_as_string <- paste('EPSG:4326') 
   # fitting_epsg_as_string
   image_mask_for_data_cube <- set_image_mask_for_data_cube()
   set_threads()
@@ -408,7 +399,7 @@ start_calc_with_model <- function(body) {
     dipath,
     aoapath,
     samplepointspath,
-    status_points,
+    statuspoints,
     paste(classes)
   ))
 }
@@ -475,7 +466,7 @@ start_calc_with_tdata <- function(body) {
   message("DONE: filter geometry of aoi")
   message("DONE: get_raster_stack")
 
-  sentinell_aoi <- out_sentinell_aoi #input_sentinell_aoi = sentinell_aoi
+  sentinell_aoi <- out_sentinell_aoi
   
   message("DONE: get_sentinelDat_for_aoi")
 
@@ -516,7 +507,7 @@ start_calc_with_tdata <- function(body) {
 
   ctrl_default <- trainControl(method="cv", number = 3, savePredictions = TRUE)
   own_model <- train(trainDat[,predictors],
-                 trainDat$Landnutzungsklasse, # trainDat[trainDat[3]], # trainDat$Class, # instead of response
+                 trainDat$Landnutzungsklasse,
                  method="rf",
                  metric="Kappa",
                  trControl=ctrl_default,
@@ -574,7 +565,7 @@ start_calc_with_tdata <- function(body) {
     dipath,
     aoapath,
     samplepointspath,
-    status_points,
+    statuspoints,
     paste(classes)
   ))
 }

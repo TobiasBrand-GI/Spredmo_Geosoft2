@@ -100,7 +100,7 @@ async function visualize_Results_API(){
             // Reinitialize Map, necessary due to display:none attribute
             dmap.invalidateSize();
             // Start loading of layers in leaflet map
-            mainLeafletFunctionailty(tiffUrls, JSON.parse('{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[7.657471,51.90446],[7.657471,51.97473],[7.770081,51.97473],[7.770081,51.90446],[7.657471,51.90446]]]}}'), '["ConiferousForest","DeciduousForest","Grassland","Industrial","MixedForest","OpenSoil","PlantedFields","Settlement","Urban","Water"]', 1 );
+            mainLeafletFunctionailty(tiffUrls, JSON.parse('{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[7.657471,51.90446],[7.657471,51.97473],[7.770081,51.97473],[7.770081,51.90446],[7.657471,51.90446]]]}}'), '["test","Acker","Industrie","Strasse","Urban","Wald","Wasser"]', 1 );
         }
     }catch(err){
         // catch error and show error design on page
