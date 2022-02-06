@@ -36,3 +36,9 @@ paths:
             schema:
               type: string
               example: [{"cloud_cover": 50,"start_day": "2021-04-01","end_day": "2021-04-30","resolution": 100,"path_tdata": "tmp/tdata.geojson","path_aoi": "tmp/aoi.geojson"}]
+  /refresh:
+    get:
+      summary: 'Endpunkt um den tmp Ordner zu leeren'
+      responses:
+        '200':
+          description: tmp has been cleared successfully
