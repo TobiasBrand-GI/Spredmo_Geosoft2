@@ -65,7 +65,6 @@ function addLULCLegend(){
 }
 
 legend.onAdd = function (map) {
-  //$("input:radio.leaflet-control-layers-selector:checked");
   var div = L.DomUtil.create('div', 'info legend'),
       labels = ["Not Applicable", "Applicable"];
       div.innerHTML +='<i style="background:' + "#AEAEAE" + '"></i> ' + labels[0] + '<br>';
