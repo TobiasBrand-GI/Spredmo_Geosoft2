@@ -47,11 +47,11 @@ The cloud cover indicates the maximum cloud cover on the sentinal 2 data. You ca
 
 ## Resolution
 Describes the resolution of the AOI in pixels. the number of pixels in x direction is selected. The number of pixels in Y direction scales with the AOI. The following options are available:
-+ very low: 100 Pixel in x Direction
-+ low: 200 Pixel in x Direction
-+ medium: 300 Pixel in x Direction
-+ high: 400 Pixel in x Direction
-+ very high: 500 Pixel in x Direction
++ very low: 200 Pixel in x Direction
++ low: 400 Pixel in x Direction
++ medium: 600 Pixel in x Direction
++ high: 800 Pixel in x Direction
++ very high: 1200 Pixel in x Direction
 
 # Workflow
 
