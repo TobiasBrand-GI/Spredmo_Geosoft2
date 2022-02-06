@@ -26,7 +26,7 @@ To install the frontend part of the "Spredmo-Tool" on your local machine you nee
 Due to security reasons, we cannot include a working identification key for connecting with the AWS. So to be able to connect to your instance,
 start your Docker container and run
 
-```docker exec -it <container name> /bin/bash```
+```docker exec -it SpredmoFrontend /bin/bash```
  
 and copy a valid key.pem into the "keys" folder.
  
