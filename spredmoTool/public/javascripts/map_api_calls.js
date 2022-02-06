@@ -6,7 +6,6 @@ let tiffUrls = ["images/lulc-prediction.tif","images/di_of_aoa.tif","images/aoa.
 function startAlgorithm(){
     let qs = new URLSearchParams(window.location.search);
     let mode = qs.get("mode")
-    console.log(mode)
     if(mode==="plumber"){
         visualize_Results_API();
     }else if(mode==="demo"){

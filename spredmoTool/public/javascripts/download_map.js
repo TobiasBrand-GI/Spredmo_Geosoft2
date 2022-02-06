@@ -117,8 +117,6 @@ dmap.on('baselayerchange', function (e){
   }
 });
 
-
-
 /**
  * Main function to call all necessary processes to visualize the GeoTIFFs, GeoJSONs and JSON data in the Leaflet Map
  * @param {Array} tiffurls  Array of strings containing all relative local paths of all downloaded files 
@@ -168,7 +166,6 @@ async function loadTIFF(url){
             tmpscale.push(colorScaleNom[i]);
             tmpdomain.push(i);
           }
-          console.log(tmpscale)
           var scale = chroma.scale(tmpscale).domain(tmpdomain);
         }else if(url==="images/di_of_aoa.tif"){
           var scale = chroma.scale(colorScaleOrd).domain([0.25,0.5,0.75,1,2,5,10]);
@@ -198,7 +195,7 @@ async function loadTIFF(url){
  */
 async function createMeassurePoints(){
   var crossIcon = L.icon({
-    iconUrl: '../images/marker_cross.png',
+    iconUrl: '../src/marker_cross.png',
 
     iconAnchor:   [12, 12], // point of the icon which will correspond to marker's location
     popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
