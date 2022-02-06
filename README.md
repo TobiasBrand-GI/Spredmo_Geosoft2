@@ -28,15 +28,13 @@ start your Docker container and run
 
 ```docker exec -it <container name> /bin/bash```
  
-and copy a valid key.pem into the
-  
-```keys ``` folder.
+and copy a valid key.pem into the "keys" folder.
  
 ## Backend
  
 To install the backend part of the "Spredmo-Tool" on your AWS EC2-instance, you need to:
 + Install Docker for servers
-+ create a folder in the root directory called "tmpextern". ```mkdir tmpextern```
++ create a folder in the root directory called "tmpextern".
 + run the following docker command:
 
 ```docker run -d --rm -p 8780:8000 -v /tmpextern:/app/tmp --name SpredmoBackend simonmeissner/geosoft2spredmo:backend ```
