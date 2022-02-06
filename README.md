@@ -11,22 +11,37 @@ The evaluation is done by the Dissimilarity Index or the Area of Applicability.
 The AoA makes it possible to determine whether the trained model is applicable to the investigated area is applicable. The Dissimilarity Index makes statements about how similar the trained model is to the investigated area.
 The user has the possibility to either use an already trained model or to upload training data on the basis of which a trained model is created.
 
-## Installation
+# Installation
 Our software supports multiple devices and operating systems due to the usage of Docker.
-To install the "Spredmo-Tool" on your AWS EC2 instance, you need to:
-+ Install Docker for servers
-+ Install an R work environment on your instance
-+ Start up the Docker Container
 
-For the Frontend part of the app, you need to install Docker on your local machine or web-hosting server and simply run the Docker Container.
+## Frontend
+
+For the Frontend part of the app, you need to install Docker on your local machine or web-hosting server and simply run the Docker command.
+To install the frontend part of the "Spredmo-Tool" on your local machine you need to:
++ Install Docker (Docker Desktop)
++ run the following docker command:
+
+```docker run -d -it -p 3000:3000 --name SpredmoFrontend simonmeissner/geosoft2spredmo:frontend```
+
 Due to security reasons, we cannot include a working identification key for connecting with the AWS. So to be able to connect to your instance,
 start your Docker container and run
 
- ```docker exec -it <container name> /bin/bash```
+```docker exec -it <container name> /bin/bash```
  
-  and copy a valid key.pem into the
+and copy a valid key.pem into the
   
- ```SPREDMO_GEOSOFT2/spredmoTool/keys ``` folder.
+```keys ``` folder.
+ 
+## Backend
+ 
+To install the backend part of the "Spredmo-Tool" on your AWS EC2-instance, you need to:
++ Install Docker for servers
++ create a folder in the root directory called "tmpextern". ```mkdir tmpextern```
++ run the following docker command:
+
+```docker run -d --rm -p 8780:8000 -v /tmpextern:/app/tmp --name SpredmoBackend simonmeissner/geosoft2spredmo:backend ```
+
+make sure that port 8780 of the AWS EC2-instance is opened.
  
 # Requirements, Input Data
 
