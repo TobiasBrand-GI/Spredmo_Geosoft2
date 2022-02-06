@@ -33,11 +33,22 @@
                 <li class="nav-item">
                     <a class="nav-link rounded" href="impressum.html">Impressum</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link rounded" href="#" onclick="">Demo</a>
+                </li>
             </ul>
         </div>
     </nav>
     <!--Main Content-->
     <div id="contentFrame" class="d-flex justify-content-center flex-wrap p-5">
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast" style="position: absolute; top: 0; right: 0; z-index:999;">
+            <div class="toast-header">
+              <strong class="mr-auto">Wrong Input</strong>
+              <button type="button" class="ml-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close" style="position:absolute; right:5%;">
+              </button>
+            </div>
+            <div class="toast-body" id="errorText"></div>
+        </div>
         <div id="textContent" class=" col col-lg-6 col-12 rounded text-center">
             <h1> Tool zur Berechnung der Area of Applicability</h1>
             <!--User Input Form-->
@@ -64,14 +75,14 @@
                 </div></br>
                 <!--User Input start and end day-->
                 <div id="dateDiv" class="row">
-                    <h5>Wählen Sie den zu betrachdenen Zeitraum</h5>
+                    <h5>Wählen Sie den zu betrachtenden Zeitraum</h5>
                     <div class="col">
                         <label for="startDay">von:</label>
-                        <input type="date" class="form-control form-control-md" name="startDay" id="startDay" required/>
+                        <input type="date" class="form-control form-control-md" name="startDay" id="startDay" required onblur="validateTimeInput()"/>
                     </div>
                     <div class="col">
                         <label for="endDay">bis:</label>
-                        <input type="date" class="form-control form-control-md" name="endDay" id="endDay"required/>
+                        <input type="date" class="form-control form-control-md" name="endDay" id="endDay"required onchange="validateTimeInput()"/>
                     </div>
                 </div></br>
                 <!--Resolution and cloud coverage-->
@@ -88,16 +99,16 @@
                         </select></br>
                     </div>
                     <div class="col">
-                        <label>Wolkenbedekung:</label>
+                        <label>Wolkenbedeckung:</label>
                         <div class="slidecontainer col col-12">
                             <p><b id="amount"></b></p>
-                            <input type="range" min="2" max="10" value="6" class="slider" id="myRange" oninput="displayAmountSlider(1)" required/>
+                            <input type="range" min="2" max="10" value="6" class="slider" id="myRange" name="myRange" oninput="displayAmountSlider(1)" required/>
                         </div>
                     </div>
                 </div>
                 <!--Script to change and administrate input-->
                 <script src="javascripts/inputconfig.js"></script>
-                <button type="submit" name="action" class="btn btn-green mb-5">Berechnen</button>
+                <button type="submit" name="action" id="action" class="btn btn-green mb-5">Berechnen</button>
             </form>
         </div>
         <!--Map-->

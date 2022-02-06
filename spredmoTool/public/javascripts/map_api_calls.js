@@ -6,16 +6,15 @@ function getRResults() {
 }
 
 async function visualize_Results(){
-    document.getElementById("loading").style.display="none";
-            document.getElementById("mapid").style.display="block";
-            document.getElementById("dwButton").disabled=false;
-            dmap.invalidateSize();
-    loadTIFF("images/aoa.tif");
     try{
         const res = await getRResults();
         if(res.success===true){
-            
-            
+            console.log(res.message)
+            document.getElementById("loading").style.display="none";
+            document.getElementById("mapid").style.display="block";
+            document.getElementById("dwButton").disabled=false;
+            dmap.invalidateSize();
+            loadTIFF("images/aoa.tif");
         }else{
             alert(res.message);
             window.location.href = "index.html";
@@ -53,16 +52,16 @@ async function download(){
     let responseString="";
     try{
         if(aoaCheck.checked){
-           downloadArray.push(['../images/aoa (2).tif','Area of Applicability','tif','aoa']) 
+           downloadArray.push(['../images/aoa.tif','Area of Applicability','tif','aoa']) 
         }
         if(classCheck.checked){
-            downloadArray.push(['../images/lulc-prediction (2).tif','Random Forest Classification','tif','lulc-classifier'])
+            downloadArray.push(['../images/lulc-prediction.tif','Random Forest Classification','tif','lulc-classifier'])
         }
         if(pointsCheck.checked){
-            downloadArray.push(['../images/map.geojson','further random recommended messaruement points','geojson','recommended-points'])
+            downloadArray.push(['../images/sample_points.json','further random recommended messaruement points','json','recommended-points'])
         }
         if(modelCheck.checked){
-            downloadArray.push(['../images/new.tif','R Classification Model','tif','class-model'])
+            downloadArray.push(['../images/final_model.rds','R Classification Model','rds','class-model'])
         }
         if(downloadArray.length!=0){
             for(i=0; i<downloadArray.length;i++){
